@@ -16,6 +16,10 @@ bld/
 [Bb]in/
 [Oo]bj/
 
+#edited by gaoxu
+Generated Files/
+
+
 # Roslyn cache directories
 *.ide/
 
