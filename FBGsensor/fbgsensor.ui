@@ -223,5 +223,22 @@
  <resources>
   <include location="fbgsensor.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>openDeviceAct</sender>
+   <signal>triggered()</signal>
+   <receiver>openDeviceBtn</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>738</x>
+     <y>227</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
