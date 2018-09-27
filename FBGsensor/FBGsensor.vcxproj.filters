@@ -36,9 +36,15 @@
     <ClCompile Include="fbgsensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="serialportmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="fbgsensor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="serialportmanager.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

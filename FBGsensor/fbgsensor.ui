@@ -129,6 +129,9 @@
       <property name="text">
        <string>打开设备</string>
       </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QPushButton" name="setParaBtn">
       <property name="geometry">
@@ -210,7 +213,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="openDeviceAct"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="openDeviceAct">
@@ -223,22 +225,5 @@
  <resources>
   <include location="fbgsensor.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>openDeviceAct</sender>
-   <signal>triggered()</signal>
-   <receiver>openDeviceBtn</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>738</x>
-     <y>227</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
