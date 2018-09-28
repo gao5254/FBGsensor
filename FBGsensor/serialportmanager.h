@@ -13,10 +13,14 @@ class SerialPortManager : public QObject
 public:
 	SerialPortManager(QObject *parent);
 	~SerialPortManager();
+	quint16 CRC16(QByteArray arr, int n);		
 	bool openDevice(QString str);
-	bool getDeviceInfo();
+	void closeDevice();
+	void getDeviceInfo();
+public slots:
+	void receiveMsg();
 
 private:
 	QSerialPort *sPort;		//支持串口操作
-	QByteArray *arrBuffer,*msgHeader;		//a buffer to receive msg from device, a header to be edited before sending to device
+	QByteArray *arrBuffer;		//a buffer to receive msg from device, //a header to be edited before sending to device
 };

@@ -9,13 +9,10 @@ SerialPortManager::SerialPortManager(QObject *parent)
 	//初始化成员变量
 	sPort = new QSerialPort(this);
 	arrBuffer = new QByteArray();
-	msgHeader = new QByteArray();
-	(*msgHeader)[0] = 0x55;
-	(*msgHeader)[1] = 0xAA;
-	(*msgHeader)[2] = 0xFF;
-	(*msgHeader)[3] = 0xFF;
-	(*msgHeader)[4] = 0xFF;
+// 	msgHeader = &QByteArray::fromHex("55AAFFFFFF");
 
+	//connect
+	connect(sPort, &QIODevice::readyRead, this, &SerialPortManager::receiveMsg);
 }
 
 SerialPortManager::~SerialPortManager()
@@ -27,19 +24,84 @@ SerialPortManager::~SerialPortManager()
 	}
 }
 
+
+/*check the first n+1 bytes of the arr and give the check code (n is the last index of the byte to be checked)
+the first two bytes art skiped, here are the algorithm
+'1、 置16位CRC寄存器为十六进制FFFF；
+'2、 把一个8位数据与CRC寄存器的低8位相异或，把结果放于CRC寄存器；
+'3、 把CRC寄存器的内容右移一位，用0填补最高位，检查移出位。
+'4、 如果最低位为0：重复第3步（再次移位）。
+'    如果最低位为1: CRC寄存器与十六进制数A001进行异或?
+'5、 重复步骤3和4，直到右移8次，这样整个8位数据全部进行了处理。
+'6、 重复步骤2到5，进行下一个数据处理。
+'7、 最后得到的CRC寄存器值即为CRC码，传送时将低8位先发送，高8位最后发送。
+*/
+quint16 SerialPortManager::CRC16(QByteArray arr, int n)
+{	
+
+	quint16 crc = 0xFFFF;
+	for (int i = 2; i <= n; ++i)
+	{
+		crc ^= (quint16)arr.at(i);
+		for (int j = 0; j < 8; ++j)
+		{
+			int flag = crc & 0x0001;
+			crc = crc >> 1;
+			if (flag == 1)
+			{
+				crc ^= 0xA001;
+			} 
+		}
+	}
+	return crc;
+}
+
+//open the "str" serail port
 bool SerialPortManager::openDevice(QString str)
 {
-	//open the "str" serail port
 	sPort->setPortName(str);
 	return sPort->open(QIODevice::ReadWrite);
 }
 
-bool SerialPortManager::getDeviceInfo()
+//close the serial port
+void SerialPortManager::closeDevice()
 {
-	//send "get info "msg to device
+	if (sPort->isOpen())
+	{
+		sPort->close();
+	}
+}
+
+//send "get info "msg to device
+void SerialPortManager::getDeviceInfo()
+{
 	if (!sPort->isOpen())
 	{
-		return false;
+		return ;
 	}
+	//struct the msg to be sent
+	QByteArray msg = QByteArray::fromHex("55AAFFFFFF");
+	msg.resize(10);
+	msg[5] = 0x87;
+	msg[6] = 0;
+	msg[7] = 2;
+	quint16 crc = CRC16(msg, 7);
+	msg[8] = (char)crc;
+	msg[9] = (char)(crc >> 8);
+	//send the msg
+	sPort->write(msg);
+}
 
+//receive msg from device to buffer and decide whether it is complete, if so, emit completed signal and send it in parameter
+void SerialPortManager::receiveMsg()
+{
+	//receive
+	arrBuffer->append(sPort->readAll());
+	//check for the header
+	QByteArray header = QByteArray::fromHex("AA55FFFFFF");
+	int idx=-1;
+	while ((idx = arrBuffer->indexOf(header)) != -1)
+	{
+		//TODO:if header is found, check if it is complete
+	}
 }
