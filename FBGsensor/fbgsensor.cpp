@@ -1,5 +1,7 @@
 #include "fbgsensor.h"
 #include <QMessageBox>
+#include "serialportmanager.h"
+
 
 FBGsensor::FBGsensor(QWidget *parent)
 	: QMainWindow(parent)
@@ -18,6 +20,9 @@ FBGsensor::FBGsensor(QWidget *parent)
 	ui.wavEndEdit->setEnabled(false);
 	ui.wavStartEdit->setEnabled(false);
 	ui.wavStepEdit->setEnabled(false);
+
+	//connnect
+	connect(serialPManager, &SerialPortManager::msgReceived, this, &FBGsensor::msgProcess);
 }
 
 FBGsensor::~FBGsensor()
@@ -64,4 +69,33 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 		//change text on this btn
 		ui.openDeviceBtn->setText(QString::fromLocal8Bit("打开设备"));
 	}
+}
+
+//process the received msg, depending on the 5th bit 
+void FBGsensor::msgProcess(QByteArray msg)
+{
+	switch (msg.at(5))
+	{
+	case 0x87:
+		setDeviceInfo(msg);
+		break;
+	default:
+		break;
+	}
+}
+
+//set the number, enable the edit, change the text on btn, show success info
+void FBGsensor::setDeviceInfo(QByteArray msg)
+{
+	//set the parameter from msg
+	quint16 dStart = SerialPortManager::getNum(msg, 8), dEnd = SerialPortManager::getNum(msg, 10);
+	channelNum = (quint32)(msg.at(14));
+	waveStart = (quint32)dStart + 1527000;
+	waveEnd = (quint32)dEnd + 1527000;
+	waveStep = (quint32)SerialPortManager::getNum(msg, 12);
+	//show in UI
+	ui.wavStartEdit->setText(QString::number((double)waveStart / 1000, 'f', 3));
+	ui.wavStartEdit->setText(QString::number((double)waveEnd / 1000, 'f', 3));
+	ui.wavStartEdit->setText(QString::number((double)waveStep / 1000, 'f', 3));
+	//UNDONE: continue here
 }

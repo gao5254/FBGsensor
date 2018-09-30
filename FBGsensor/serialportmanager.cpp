@@ -92,6 +92,18 @@ void SerialPortManager::getDeviceInfo()
 	sPort->write(msg);
 }
 
+quint16 SerialPortManager::getNum(QByteArray arr, int idx, int n /*= 2*/)
+{
+	if (n == 2)
+	{
+		quint16 temp = (quint16)(arr.at(idx));
+		temp = temp << 8;
+		temp += (quint16)(arr.at(idx + 1));
+		return temp;
+	}
+	return 0;
+}
+
 //receive msg from device to buffer and decide whether it is complete, if so, emit completed signal and send it in parameter
 void SerialPortManager::receiveMsg()
 {
@@ -99,9 +111,28 @@ void SerialPortManager::receiveMsg()
 	arrBuffer->append(sPort->readAll());
 	//check for the header
 	QByteArray header = QByteArray::fromHex("AA55FFFFFF");
-	int idx=-1;
-	while ((idx = arrBuffer->indexOf(header)) != -1)
+	int idx=0;
+	//check continuously
+	while ((idx = arrBuffer->indexOf(header,idx)) != -1)
 	{
-		//TODO:if header is found, check if it is complete
+		//if header is found, check if its length is enough
+		quint16 l = getNum(*arrBuffer, idx + 6);
+		if (idx + 8 + l <= arrBuffer->size())
+		{
+			//if length is enough, extract the msg array, check CRC16
+			QByteArray msg = arrBuffer->mid(idx, l + 8);
+			arrBuffer->remove(0, idx + 8 + l);
+			quint16 crc = CRC16(msg, 5 + l);
+			if (msg.at(6 + l) == (char)(crc) && msg.at(7 + l) == (char)(crc >> 8));
+			{
+				//send the complete msg
+				emit msgReceived(msg);
+			}
+			idx = 0;
+		}
+		else
+		{
+			idx++;
+		}
 	}
 }

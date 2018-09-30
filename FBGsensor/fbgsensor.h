@@ -2,7 +2,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_fbgsensor.h"
-#include "serialportmanager.h"
+//pre-declaration
+class SerialPortManager;
 
 class FBGsensor : public QMainWindow
 {
@@ -20,7 +21,10 @@ public slots:
 private:
 	Ui::FBGsensorClass ui;
 	QString portNumber = "COM3";		//存储端口号
-	quint32 waveStart = 1527000, waveEnd = 1568000, waveStep = 20;		//存储扫描波长起始值，终止值，间隔，单位为pm
+	quint32 waveStart = 1527000, waveEnd = 1568000, waveStep = 20, channelNum = 2;		//存储扫描波长起始值，终止值，间隔，单位为pm，通道数
 	SerialPortManager *serialPManager;		//串口管理及通信
 	QLabel *statusLabel;		//label showing msg in the statusbar
+
+	void msgProcess(QByteArray msg);
+	void setDeviceInfo(QByteArray msg);
 };

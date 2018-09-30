@@ -17,8 +17,13 @@ public:
 	bool openDevice(QString str);
 	void closeDevice();
 	void getDeviceInfo();
+	static quint16 getNum(QByteArray arr, int idx, int n = 2);
+
 public slots:
 	void receiveMsg();
+
+signals:
+	void msgReceived(QByteArray msg);
 
 private:
 	QSerialPort *sPort;		//支持串口操作
