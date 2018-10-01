@@ -46,8 +46,9 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 		if (!serialPManager->openDevice(portNumber))
 		{
 			//if failed,show warningbox, change the btn checked to false
-			statusLabel->setText(QString::fromLocal8Bit("串口打开失败"));
+// 			statusLabel->setText(QString::fromLocal8Bit("串口打开失败"));
 			ui.openDeviceBtn->setChecked(false);
+			ui.statusBar->showMessage(QString::fromLocal8Bit("串口打开失败"), 3000);
 			QMessageBox msgBox;
 			msgBox.setText(QString::fromLocal8Bit("串口打开失败！"));
 			msgBox.exec();
@@ -55,7 +56,7 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 		}
 		//get device info
 		serialPManager->getDeviceInfo();
-		
+		firstSetInfo = true;
 	} 
 	else
 	{
@@ -71,13 +72,34 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 	}
 }
 
+//show a asking dialog, set the info, then get the info
+void FBGsensor::on_setParaBtn_clicked()
+{
+	if (QMessageBox::question(this, "FBGsensor", QString::fromLocal8Bit("确定要改变设备参数吗？"), QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok)==QMessageBox::Cancel)
+	{
+		return;
+	}
+	//FIXME:get UI text
+	quint16 dStart = (quint16)((quint64)(ui.wavStartEdit->text().toDouble()*1000.0) - 1527000);
+	quint16 dEnd = (quint16)((quint64)(ui.wavEndEdit->text().toDouble()*1000.0) - 1527000);
+	QString s = ui.wavStepEdit->text();
+	float c = s.toFloat();
+	double a = s.toDouble();
+	quint16 b = a*1000.0;
+	quint16 dStep = (quint16)(ui.wavStepEdit->text().toFloat()*1000.0);
+	//set info
+	serialPManager->setDeviceInfo(dStart, dEnd, dStep, channelNum);
+	//get device info
+	serialPManager->getDeviceInfo();
+}
+
 //process the received msg, depending on the 5th bit 
 void FBGsensor::msgProcess(QByteArray msg)
 {
-	switch (msg.at(5))
+	switch ((uchar)msg.at(5))
 	{
 	case 0x87:
-		setDeviceInfo(msg);
+		showDeviceInfo(msg);
 		break;
 	default:
 		break;
@@ -85,17 +107,31 @@ void FBGsensor::msgProcess(QByteArray msg)
 }
 
 //set the number, enable the edit, change the text on btn, show success info
-void FBGsensor::setDeviceInfo(QByteArray msg)
+void FBGsensor::showDeviceInfo(QByteArray msg)
 {
 	//set the parameter from msg
 	quint16 dStart = SerialPortManager::getNum(msg, 8), dEnd = SerialPortManager::getNum(msg, 10);
-	channelNum = (quint32)(msg.at(14));
+	channelNum = (quint32)(uchar)(msg.at(14));
 	waveStart = (quint32)dStart + 1527000;
 	waveEnd = (quint32)dEnd + 1527000;
 	waveStep = (quint32)SerialPortManager::getNum(msg, 12);
 	//show in UI
 	ui.wavStartEdit->setText(QString::number((double)waveStart / 1000, 'f', 3));
-	ui.wavStartEdit->setText(QString::number((double)waveEnd / 1000, 'f', 3));
-	ui.wavStartEdit->setText(QString::number((double)waveStep / 1000, 'f', 3));
-	//UNDONE: continue here
+	ui.wavEndEdit->setText(QString::number((double)waveEnd / 1000, 'f', 3));
+	ui.wavStepEdit->setText(QString::number((double)waveStep / 1000, 'f', 3));
+	if (firstSetInfo)
+	{
+		//enable the edit
+		ui.setParaBtn->setEnabled(true);
+		ui.wavEndEdit->setEnabled(true);
+		ui.wavStartEdit->setEnabled(true);
+		ui.wavStepEdit->setEnabled(true);
+		//change the text
+		ui.openDeviceBtn->setText(QString::fromLocal8Bit("关闭设备"));
+		firstSetInfo = false;
+	}
+	//show success info
+// 	statusLabel->setText(QString::fromLocal8Bit("设备参数更新成功"));
+	ui.statusBar->showMessage(QString::fromLocal8Bit("设备参数更新成功"), 2000);
+
 }

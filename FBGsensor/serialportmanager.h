@@ -17,7 +17,9 @@ public:
 	bool openDevice(QString str);
 	void closeDevice();
 	void getDeviceInfo();
-	static quint16 getNum(QByteArray arr, int idx, int n = 2);
+	void setDeviceInfo(quint16 dStart, quint16 dEnd, quint16 dStep, quint16 channleNum);
+	static quint16 getNum(QByteArray arr, int idx);
+	static void setNum(QByteArray &arr, int idx, quint16 num);
 
 public slots:
 	void receiveMsg();

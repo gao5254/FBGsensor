@@ -1,6 +1,7 @@
 #include "serialportmanager.h"
 #include <QtSerialPort/QSerialPort>
 #include <QByteArray>
+#include <QDebug>
 
 
 SerialPortManager::SerialPortManager(QObject *parent)
@@ -12,7 +13,7 @@ SerialPortManager::SerialPortManager(QObject *parent)
 // 	msgHeader = &QByteArray::fromHex("55AAFFFFFF");
 
 	//connect
-	connect(sPort, &QIODevice::readyRead, this, &SerialPortManager::receiveMsg);
+	connect(sPort, &QSerialPort::readyRead, this, &SerialPortManager::receiveMsg);
 }
 
 SerialPortManager::~SerialPortManager()
@@ -39,28 +40,41 @@ the first two bytes art skiped, here are the algorithm
 quint16 SerialPortManager::CRC16(QByteArray arr, int n)
 {	
 
-	quint16 crc = 0xFFFF;
+	qint32 crc = 0xFFFFFFFF;
 	for (int i = 2; i <= n; ++i)
 	{
-		crc ^= (quint16)arr.at(i);
+		qint32 temp = arr.at(i);
+		temp &= 0xFF;
+		crc ^= temp;
 		for (int j = 0; j < 8; ++j)
 		{
-			int flag = crc & 0x0001;
+			int flag = crc & 0x00000001;
 			crc = crc >> 1;
+			crc &= 0x7FFF;
 			if (flag == 1)
 			{
 				crc ^= 0xA001;
 			} 
 		}
 	}
-	return crc;
+	if (crc < 0)
+	{
+		crc -= 0xFFFF0000;
+	}
+	quint16 A = (quint16)crc;
+	return (quint16)crc;
 }
 
 //open the "str" serail port
 bool SerialPortManager::openDevice(QString str)
 {
 	sPort->setPortName(str);
+	sPort->setBaudRate(115200);
+	sPort->setParity(QSerialPort::NoParity);
+	sPort->setDataBits(QSerialPort::Data8);
+	sPort->setStopBits(QSerialPort::OneStop);
 	return sPort->open(QIODevice::ReadWrite);
+// 	qDebug() << sPort->baudRate() << sPort->parity() << sPort->dataBits() << sPort->stopBits();
 }
 
 //close the serial port
@@ -83,8 +97,7 @@ void SerialPortManager::getDeviceInfo()
 	QByteArray msg = QByteArray::fromHex("55AAFFFFFF");
 	msg.resize(10);
 	msg[5] = 0x87;
-	msg[6] = 0;
-	msg[7] = 2;
+	setNum(msg, 6, 2);
 	quint16 crc = CRC16(msg, 7);
 	msg[8] = (char)crc;
 	msg[9] = (char)(crc >> 8);
@@ -92,16 +105,44 @@ void SerialPortManager::getDeviceInfo()
 	sPort->write(msg);
 }
 
-quint16 SerialPortManager::getNum(QByteArray arr, int idx, int n /*= 2*/)
+void SerialPortManager::setDeviceInfo(quint16 dStart, quint16 dEnd, quint16 dStep, quint16 channleNum)
 {
-	if (n == 2)
+	if (!sPort->isOpen())
 	{
-		quint16 temp = (quint16)(arr.at(idx));
-		temp = temp << 8;
-		temp += (quint16)(arr.at(idx + 1));
-		return temp;
+		return;
 	}
-	return 0;
+	//struct the msg to be sent
+	QByteArray msg = QByteArray::fromHex("55AAFFFFFF");
+	msg.resize(channleNum * 4 + 7 + 2 + 8);
+	msg[5] = 0x63;
+	setNum(msg, 6, channleNum * 4 + 7 + 2);
+	setNum(msg, 8, dStart);
+	setNum(msg, 10, dEnd);
+	setNum(msg, 12, dStep);
+	msg[14] = (char)channleNum;
+	for (int i = 0; i < channleNum;++i)
+	{
+		setNum(msg, 15 + i * 4, 1000);
+		setNum(msg, 17 + i * 4, 400);
+	}
+	quint16 crc = CRC16(msg, 8 + 7 + channleNum * 4 - 1);
+	msg[8 + 7 + channleNum * 4] = (char)crc;
+	msg[8 + 7 + channleNum * 4 + 1] = (char)(crc >> 8);
+	sPort->write(msg);
+}
+
+quint16 SerialPortManager::getNum(QByteArray arr, int idx)
+{
+		quint16 temp = (quint16)(uchar)(arr.at(idx));
+		temp = temp << 8;
+		temp += (quint16)(uchar)(arr.at(idx + 1));
+		return temp;
+}
+
+void SerialPortManager::setNum(QByteArray &arr, int idx, quint16 num)
+{
+	arr[idx + 1] = (char)num;
+	arr[idx] = (char)(num >> 8);
 }
 
 //receive msg from device to buffer and decide whether it is complete, if so, emit completed signal and send it in parameter
