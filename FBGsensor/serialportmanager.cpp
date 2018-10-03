@@ -94,6 +94,8 @@ void SerialPortManager::getDeviceInfo()
 		return ;
 	}
 	//struct the msg to be sent
+	static int i= 0;
+	qDebug() << ++i;
 	QByteArray msg = QByteArray::fromHex("55AAFFFFFF");
 	msg.resize(10);
 	msg[5] = 0x87;

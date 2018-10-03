@@ -24,7 +24,9 @@ private:
 	quint32 waveStart = 1527000, waveEnd = 1568000, waveStep = 20, channelNum = 2;		//存储扫描波长起始值，终止值，间隔，单位为pm，通道数
 	SerialPortManager *serialPManager;		//串口管理及通信
 	QLabel *statusLabel;		//label showing msg in the statusbar
+	QTimer *getInfoTimer;		//timer to send "getinfo" msg after "setinfo"
 	bool firstSetInfo=true;			//if first set info, change the status of edit and btn
+	
 
 	void msgProcess(QByteArray msg);
 	void showDeviceInfo(QByteArray msg);
