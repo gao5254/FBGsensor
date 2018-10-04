@@ -185,7 +185,7 @@
      </attribute>
     </widget>
    </widget>
-   <widget class="QLabel" name="showLabel">
+   <widget class="displayLabel" name="showLabel">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -222,6 +222,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>displayLabel</class>
+   <extends>QLabel</extends>
+   <header>displaylabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="fbgsensor.qrc"/>
  </resources>

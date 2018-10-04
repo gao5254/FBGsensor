@@ -39,6 +39,9 @@
     <ClCompile Include="serialportmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="displaylabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="fbgsensor.h">
@@ -47,9 +50,15 @@
     <QtMoc Include="serialportmanager.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="displaylabel.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="fbgsensor.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="displaylabel.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
