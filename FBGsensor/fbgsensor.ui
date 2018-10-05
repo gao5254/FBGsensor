@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>853</width>
-    <height>564</height>
+    <width>858</width>
+    <height>603</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="hardwareTab">
      <attribute name="title">
@@ -179,10 +179,62 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="scanTab">
      <attribute name="title">
-      <string>Tab 2</string>
+      <string>扫描</string>
      </attribute>
+     <widget class="QLabel" name="label_5">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>71</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>通道选择:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>30</y>
+        <width>69</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="singleScanBtn">
+      <property name="geometry">
+       <rect>
+        <x>64</x>
+        <y>100</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>单次扫描</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="continuousScanBtn">
+      <property name="geometry">
+       <rect>
+        <x>64</x>
+        <y>140</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>连续扫描</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="displayLabel" name="showLabel">
@@ -190,9 +242,15 @@
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>411</width>
-      <height>441</height>
+      <width>531</width>
+      <height>511</height>
      </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>500</width>
+      <height>500</height>
+     </size>
     </property>
    </widget>
   </widget>
@@ -201,7 +259,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>853</width>
+     <width>858</width>
      <height>23</height>
     </rect>
    </property>

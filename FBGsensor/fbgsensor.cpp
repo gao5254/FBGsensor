@@ -17,11 +17,18 @@ FBGsensor::FBGsensor(QWidget *parent)
 	statusLabel = new QLabel();
 	ui.statusBar->addWidget(statusLabel);
 
-	//初始状态下某些输入框不可用
+	//disable btn and edit, set validator
 	ui.setParaBtn->setEnabled(false);
-	ui.wavEndEdit->setEnabled(false);
-	ui.wavStartEdit->setEnabled(false);
-	ui.wavStepEdit->setEnabled(false);
+
+// 	ui.wavEndEdit->setEnabled(false);
+	ui.wavEndEdit->setValidator(new QDoubleValidator(1527.000, 1568.000, 3, ui.wavEndEdit));
+
+// 	ui.wavStartEdit->setEnabled(false);
+	ui.wavStartEdit->setValidator(new QDoubleValidator(1527.000, 1568.000, 3, ui.wavStartEdit));
+
+// 	ui.wavStepEdit->setEnabled(false);
+	ui.wavStepEdit->setValidator(new QDoubleValidator(0.010, 0.040, 3, ui.wavStepEdit));
+
 
 	//connnect
 	connect(serialPManager, &SerialPortManager::msgReceived, this, &FBGsensor::msgProcess);
@@ -83,11 +90,11 @@ void FBGsensor::on_setParaBtn_clicked()
 		return;
 	}
 	//get UI text
-// 	quint16 dStart = (quint16)((quint64)(ui.wavStartEdit->text().toDouble()*1000.0) - 1527000);
+	quint16 dStart = (quint16)((quint64)(ui.wavStartEdit->text().toDouble()*1000.0) - 1527000);
 	quint16 dStart = (quint16)(ui.wavStartEdit->text().remove('.').toUInt() - 1527000);
-// 	quint16 dEnd = (quint16)((quint64)(ui.wavEndEdit->text().toDouble()*1000.0) - 1527000);
+	quint16 dEnd = (quint16)((quint64)(ui.wavEndEdit->text().toDouble()*1000.0) - 1527000);
 	quint16 dEnd = (quint16)(ui.wavEndEdit->text().remove('.').toUInt() - 1527000);
-// 	quint16 dStep = (quint16)(ui.wavStepEdit->text().toFloat()*1000.0);
+	quint16 dStep = (quint16)(ui.wavStepEdit->text().toFloat()*1000.0);
 	quint16 dStep = (quint16)(ui.wavStepEdit->text().remove('.').toUInt());
 
 	//set info
