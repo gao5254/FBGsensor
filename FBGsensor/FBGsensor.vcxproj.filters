@@ -42,6 +42,9 @@
     <ClCompile Include="displaylabel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="doublevalidator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="fbgsensor.h">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="displaylabel.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="doublevalidator.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

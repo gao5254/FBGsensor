@@ -94,8 +94,8 @@ void SerialPortManager::getDeviceInfo()
 		return ;
 	}
 	//struct the msg to be sent
-	static int i= 0;
-	qDebug() << ++i;
+// 	static int i= 0;
+// 	qDebug() << ++i;
 	QByteArray msg = QByteArray::fromHex("55AAFFFFFF");
 	msg.resize(10);
 	msg[5] = 0x87;
@@ -131,6 +131,26 @@ void SerialPortManager::setDeviceInfo(quint16 dStart, quint16 dEnd, quint16 dSte
 	msg[8 + 7 + channleNum * 4] = (char)crc;
 	msg[8 + 7 + channleNum * 4 + 1] = (char)(crc >> 8);
 	sPort->write(msg);
+}
+
+//send "scan" msg to device
+void SerialPortManager::scanOnce()
+{
+	if (!sPort->isOpen())
+	{
+		return;
+	}
+	//struct the msg to be sent
+	QByteArray msg = QByteArray::fromHex("55AAFFFFFF");
+	msg.resize(10);
+	msg[5] = 0x59;
+	setNum(msg, 6, 2);
+	quint16 crc = CRC16(msg, 7);
+	msg[8] = (char)crc;
+	msg[9] = (char)(crc >> 8);
+	//send the msg
+	sPort->write(msg);
+
 }
 
 quint16 SerialPortManager::getNum(QByteArray arr, int idx)
