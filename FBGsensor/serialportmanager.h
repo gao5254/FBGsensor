@@ -19,6 +19,7 @@ public:
 	void getDeviceInfo();
 	void setDeviceInfo(quint16 dStart, quint16 dEnd, quint16 dStep, quint16 channleNum);
 	void scanOnce();
+	void getSpectrumData(quint8 currentChannel);
 	static quint16 getNum(QByteArray arr, int idx);
 	static void setNum(QByteArray &arr, int idx, quint16 num);
 

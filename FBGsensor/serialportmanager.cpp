@@ -153,6 +153,26 @@ void SerialPortManager::scanOnce()
 
 }
 
+void SerialPortManager::getSpectrumData(quint8 currentChannel)
+{
+	if (!sPort->isOpen())
+	{
+		return;
+	}
+	//struct the msg to be sent
+	QByteArray msg = QByteArray::fromHex("55AAFFFFFF");
+	msg.resize(11);
+	msg[5] = 0x58;
+	setNum(msg, 6, 3);
+	msg[8] = currentChannel;
+	quint16 crc = CRC16(msg, 8);
+	msg[9] = (char)crc;
+	msg[10] = (char)(crc >> 8);
+	//send the msg
+	sPort->write(msg);
+
+}
+
 quint16 SerialPortManager::getNum(QByteArray arr, int idx)
 {
 		quint16 temp = (quint16)(uchar)(arr.at(idx));

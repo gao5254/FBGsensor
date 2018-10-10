@@ -11,7 +11,12 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 	//initialize member
 	serialPManager = new SerialPortManager((QObject*)this);
-	sendMsgTimer = new QTimer(this);
+	sendMsgTimer = new QTimer(this) ;
+	spectrumData = new QVector<quint16> [channelNum];
+	for (int i = 0; i < channelNum; i++)
+	{
+		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
+	}
 
 	//init statusbar
 	statusLabel = new QLabel();
@@ -46,7 +51,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 FBGsensor::~FBGsensor()
 {
-
+	delete[] spectrumData;
 }
 
 /*如果需要打开，则
@@ -86,6 +91,7 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 		ui.wavEndEdit->setEnabled(false);
 		ui.wavStartEdit->setEnabled(false);
 		ui.wavStepEdit->setEnabled(false);
+		ui.scanTab->setEnabled(false);
 		//change text on this btn
 		ui.openDeviceBtn->setText(QString::fromLocal8Bit("打开设备"));
 	}
@@ -132,7 +138,7 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 			ui.scanBtn->setText(QString::fromLocal8Bit("扫描中"));
 		}
 		scanStarted = true;
-		currentChannel = 1;
+		currentChannel = 0;
 		sendMsgTimer->disconnect();
 		connect(sendMsgTimer, &QTimer::timeout, serialPManager, &SerialPortManager::scanOnce);
 		serialPManager->scanOnce();
@@ -141,10 +147,17 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 	else
 	{
 		scanStarted = false;
-		currentChannel = 1;
+		currentChannel = 0;
 		ui.scanBtn->setText(QString::fromLocal8Bit("开始扫描"));
 		ui.continuousCheck->setEnabled(true);
 	}
+}
+
+//pass the index to label, and update it
+void FBGsensor::on_channelCBBox_currentIndexChanged(int index)
+{
+	ui.showLabel->setIndex(index);
+	ui.showLabel->update();
 }
 
 //process the received msg, depending on the 5th bit 
@@ -157,6 +170,8 @@ void FBGsensor::msgProcess(QByteArray msg)
 		break;
 	case 0x59:
 		spectrumSample();
+	case 0x58:
+		loadSpectrumData(msg);
 	default:
 		break;
 	}
@@ -172,10 +187,28 @@ void FBGsensor::showDeviceInfo(QByteArray msg)
 	}
 	//set the parameter from msg
 	quint16 dStart = SerialPortManager::getNum(msg, 8), dEnd = SerialPortManager::getNum(msg, 10);
-	channelNum = (quint32)(uchar)(msg.at(14));
+	quint16 temp = (quint32)(uchar)(msg.at(14));
+	if (temp != channelNum)
+	{
+		//reallocate the spectrumData
+		channelNum = temp;
+		if (spectrumData != nullptr)
+		{
+			delete[] spectrumData;
+			spectrumData = new QVector<quint16>[channelNum];
+		}
+		//change the item in channelCBBox, not implement now
+
+	}
 	waveStart = (quint32)dStart + 1527000;
 	waveEnd = (quint32)dEnd + 1527000;
 	waveStep = (quint32)SerialPortManager::getNum(msg, 12);
+	for (int i = 0; i < channelNum; i++)
+	{
+		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
+	}
+	//set label para
+	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 	//show in UI
 	ui.wavStartEdit->setText(QString::number(waveStart).insert(4, '.'));
 	ui.wavEndEdit->setText(QString::number(waveEnd).insert(4, '.'));
@@ -187,6 +220,7 @@ void FBGsensor::showDeviceInfo(QByteArray msg)
 		ui.wavEndEdit->setEnabled(true);
 		ui.wavStartEdit->setEnabled(true);
 		ui.wavStepEdit->setEnabled(true);
+		ui.scanTab->setEnabled(true);
 		//change the text
 		ui.openDeviceBtn->setText(QString::fromLocal8Bit("关闭设备"));
 		firstSetInfo = false;
@@ -209,11 +243,12 @@ void FBGsensor::spectrumSample()
 	{
 		return;
 	}
-	//TODO: fix the logic
-	if (currentChannel > channelNum)
+	if (currentChannel >= (quint8)channelNum)
 	{
-		currentChannel = 1;
-		//single scan finish
+		//update tht label
+		ui.showLabel->update();
+		currentChannel = 0;
+		//single scan finish, get data finish
 		if (ui.continuousCheck->isChecked())
 		{
 			sendMsgTimer->disconnect();
@@ -227,12 +262,22 @@ void FBGsensor::spectrumSample()
 			ui.scanBtn->setChecked(false);
 		}
 	}
-	else if (ui.channelCBBox->currentIndex() == currentChannel || ui.channelCBBox->currentIndex() == 0)
-	{
-		currentChannel++;
-
-	}
 	else
 	{
+		//continue get data in other channels
+		serialPManager->getSpectrumData(currentChannel);
+		currentChannel++;
+	}
+}
+
+//extract the AD value from the msg
+void FBGsensor::loadSpectrumData(QByteArray msg)
+{
+	quint8 chnl = msg.at(8);
+	int p = 9;
+	for (int i = 0; i < spectrumData[chnl].size(); i++)
+	{
+		spectrumData[chnl][i] = SerialPortManager::getNum(msg, p);
+		p += 2;
 	}
 }
