@@ -170,8 +170,10 @@ void FBGsensor::msgProcess(QByteArray msg)
 		break;
 	case 0x59:
 		spectrumSample();
+		break;
 	case 0x58:
 		loadSpectrumData(msg);
+		break;
 	default:
 		break;
 	}
@@ -248,7 +250,9 @@ void FBGsensor::spectrumSample()
 		//update tht label
 		ui.showLabel->update();
 		currentChannel = 0;
-		//single scan finish, get data finish
+		//TODO: analyze the data
+
+		//check if continuously
 		if (ui.continuousCheck->isChecked())
 		{
 			sendMsgTimer->disconnect();
@@ -266,13 +270,17 @@ void FBGsensor::spectrumSample()
 	{
 		//continue get data in other channels
 		serialPManager->getSpectrumData(currentChannel);
-		currentChannel++;
 	}
 }
 
-//extract the AD value from the msg
+//extract the AD value from the msg 
 void FBGsensor::loadSpectrumData(QByteArray msg)
 {
+	//if scan is not started, return
+	if (!scanStarted)
+	{
+		return;
+	}
 	quint8 chnl = msg.at(8);
 	int p = 9;
 	for (int i = 0; i < spectrumData[chnl].size(); i++)
@@ -280,4 +288,7 @@ void FBGsensor::loadSpectrumData(QByteArray msg)
 		spectrumData[chnl][i] = SerialPortManager::getNum(msg, p);
 		p += 2;
 	}
+	//goto spectrumSample to get next channel
+	currentChannel++;
+	spectrumSample();
 }

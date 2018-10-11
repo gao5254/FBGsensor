@@ -1,4 +1,5 @@
 #include "displaylabel.h"
+#include <QPainter>
 
 displayLabel::displayLabel(QWidget *parent)
 	: QLabel(parent)
@@ -23,4 +24,21 @@ void displayLabel::setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 n, QVec
 void displayLabel::setIndex(int index)
 {
 	chToShow = index;
+}
+
+//to paint the coordinate system and curve line on the label 
+void displayLabel::paintEvent(QPaintEvent *e)
+{
+	QPainter *painter = new QPainter(this);
+
+	//paint the coordinate system
+
+}
+
+//draw the coordinate system, including the x-axis and y-axis, and dashline in the area
+void displayLabel::drawCoordinateSys(QPainter *p)
+{
+	QPen oriPen = p->pen();
+	QPen axisPen;
+
 }
