@@ -1,5 +1,6 @@
 #include "displaylabel.h"
 #include <QPainter>
+#include <QDebug>
 
 displayLabel::displayLabel(QWidget *parent)
 	: QLabel(parent)
@@ -31,58 +32,72 @@ void displayLabel::setIndex(int index)
 //to paint the coordinate system and curve line on the label 
 void displayLabel::paintEvent(QPaintEvent *e)
 {
+	setFrameStyle(QFrame::Box);
+
 	QPainter *painter = new QPainter(this);
 	painter->setRenderHint(QPainter::Antialiasing);
 
+	//transform the painter coordinate system
+	transformCoordinateSys(painter);
+
 	//paint the coordinate system
 	drawCoordinateSys(painter);
+
+
 }
 
 //draw the coordinate system, including the x-axis and y-axis, and dashline in the area
 void displayLabel::drawCoordinateSys(QPainter *p)
 {
-	p->resetTransform();		//reset all transforms
+	//TODO:fix this
+	p->save();		//save the transform
+	p->resetTransform();	//reset the transform
+	qDebug() << p->transform();
+
 	QPen oriPen = p->pen();		//store the original pen
 	
 	//draw the main axis
 	QPen axisPen;
 	axisPen.setWidth(3);		//bold line to draw axis
 	p->setPen(axisPen);
-	p->drawLine(axisGap >> 1, this->height() - axisGap, this->width() - axisGap >> 1, this->height() - axisGap);	//x axis
-	p->drawLine(axisGap, this->height() - axisGap >> 1, axisGap, axisGap >> 1);		//y axis
-	
+	p->drawLine(axisGap >> 1, this->height() - axisGap, this->width() - (axisGap >> 1), this->height() - axisGap);	//x axis
+	p->drawLine(axisGap, this->height() - (axisGap >> 1), axisGap, axisGap >> 1);		//y axis
+
 	//draw the dashline 
+	p->restore();			//restore the transform
 	int xinter = getXInterval(), yinter = getYInterval();
-	int xlen = this->width() - axisGap - axisGap >> 1, ylen = this->height() - axisGap - axisGap >> 1;		//the display length in the widget
-	int xdis = xBegin - xEnd, ydis = yBegin - yEnd;		//the actual distance of the data
+// 	int xlen = this->width() - axisGap - (axisGap >> 1), ylen = this->height() - axisGap - (axisGap >> 1);		//the display length in the widget
+// 	int xdis = xBegin - xEnd, ydis = yBegin - yEnd;		//the actual distance of the data
 	QPen dashPen;
 	dashPen.setStyle(Qt::DashLine);
 	dashPen.setBrush(Qt::darkGray);
 	p->setPen(dashPen);
 	//vertical line
-	for (int offsetx = xBegin; offsetx < xEnd; offsetx += xinter)
+	for (int offsetx = xinter; offsetx < xEnd - xBegin; offsetx += xinter)
 	{
 		
-		p->drawLine(axisGap + (offsetx - xBegin) * xlen / xdis, this->height() - axisGap, axisGap, axisGap >> 1);		
+		p->drawLine(offsetx, 0, offsetx, yEnd - yBegin);		
 
 	}
+	p->drawLine(xEnd - xBegin, 0, xEnd - xBegin, yEnd - yBegin);
 
 	p->setPen(oriPen);		//reset the original pen
+
 }
 
 //transform the coordinate system according to the x_begin, x_end, y_begin, y_end
 void displayLabel::transformCoordinateSys(QPainter *p)
 {
-	//TODO: fix it
+
 	p->translate(axisGap, this->height() - axisGap);
-	p->translate(0 - (qint32)xBegin, 0 - (qint32)yBegin);
-	p->scale((qreal)(this->width() - axisGap - axisGap >> 1) / (qreal)(xBegin - xEnd);
+// 	p->translate(0 - (qint32)xBegin, 0 - (qint32)yBegin);
+	p->scale((qreal)(this->width() - axisGap - (axisGap >> 1)) / (qreal)(xEnd - xBegin), (qreal)(axisGap + (axisGap >> 1) - this->height()) / (yEnd - yBegin));
 }
 
 //get the x axis interval(display scale) for dash-line drawing, depending on x_begin and x_end
 int displayLabel::getXInterval()
 {
-	int dis = xBegin - xEnd;
+	int dis = xEnd - xBegin;
 // 	//if distance less than 500, internal is 500
 // 	if (dis <5000)
 // 	{
@@ -158,7 +173,7 @@ int displayLabel::getXInterval()
 //get the y axis interval(display) for dash-line drawing, depending on y_begin and y_end
 int displayLabel::getYInterval()
 {
-	int dis = yBegin - yEnd;
+	int dis = yEnd - yBegin;
 // 	//if distance less than 500, internal is 500
 // 	if (dis < 500)
 // 	{
