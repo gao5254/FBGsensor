@@ -157,7 +157,6 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 void FBGsensor::on_channelCBBox_currentIndexChanged(int index)
 {
 	ui.showLabel->setIndex(index);
-	ui.showLabel->update();
 }
 
 //process the received msg, depending on the 5th bit 
@@ -247,7 +246,8 @@ void FBGsensor::spectrumSample()
 	}
 	if (currentChannel >= (quint8)channelNum)
 	{
-		//update tht label
+		//repaint tht label
+		ui.showLabel->rePaintImage();
 		ui.showLabel->update();
 		currentChannel = 0;
 		//TODO: analyze the data

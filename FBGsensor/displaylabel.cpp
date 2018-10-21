@@ -1,18 +1,22 @@
 #include "displaylabel.h"
 #include <QPainter>
+#include <QRect>
+#include <QPaintEvent>
 #include <QDebug>
 
 displayLabel::displayLabel(QWidget *parent)
 	: QLabel(parent)
 {
 	ui.setupUi(this);
-
-	setContentsMargins(25, 25, 25, 25);
-	setFrameStyle(QFrame::Box);
+	//init the img
+	img = QImage(this->size(), QImage::Format_RGB32);
+	img.fill(Qt::white);
+	rePaintImage();
 }
 
 displayLabel::~displayLabel()
 {
+	
 }
 
 // set parameter into this class, keep same with main window
@@ -25,68 +29,97 @@ void displayLabel::setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 n, QVec
 	pData = p;
 
 	xBegin = wStart, xEnd = wEnd, yBegin = 0, yEnd = 4096;
+	rePaintImage();
+	update();
 }
 
+//change the channel to show
 void displayLabel::setIndex(int index)
 {
 	chToShow = index;
+	rePaintImage();
+	update();
+}
+
+//if some parameter change, repaint the img
+void displayLabel::rePaintImage()
+{
+	//check if size changes
+	qDebug() << this->size() << img.size() <<this->height();
+	if (this->size() != img.size())
+	{
+		img = img.scaled(this->size(), Qt::IgnoreAspectRatio);
+		qDebug() << img.size();
+		img.fill(Qt::white);
+	}
+	QPainter painter(&img);
+
+	//transform the painter coordinate system
+	transformCoordinateSys(&painter);
+
+	//paint the coordinate system
+	drawCoordinateSys(&painter);
+
+
+}
+
+void displayLabel::resizeEvent(QResizeEvent *event) 
+{
+	rePaintImage();
+
+	QWidget::resizeEvent(event);
 }
 
 //to paint the coordinate system and curve line on the label 
-void displayLabel::paintEvent(QPaintEvent *e)
+void displayLabel::paintEvent(QPaintEvent *event)
 {
-	setFrameStyle(QFrame::Box);
 
-	QPainter *painter = new QPainter(this);
-	painter->setRenderHint(QPainter::Antialiasing);
+	QPainter painter(this);
+	QRect dRect = event->rect();
+	painter.setRenderHint(QPainter::Antialiasing);
+	painter.drawImage(dRect, img, dRect);
 
-	//transform the painter coordinate system
-	transformCoordinateSys(painter);
-
-	//paint the coordinate system
-	drawCoordinateSys(painter);
 
 }
 
 //draw the coordinate system, including the x-axis and y-axis, and dashline in the area
 void displayLabel::drawCoordinateSys(QPainter *p)
 {
-	//TODO:fix this
-	qDebug() << p->transform();
-	p->save();		//save the transform
-	p->resetTransform();	//reset the transform
 
 	QPen oriPen = p->pen();		//store the original pen
-	
+	QFont oriFont = p->font();
+
 	//draw the main axis
 	QPen axisPen;
 	axisPen.setWidth(3);		//bold line to draw axis
 	p->setPen(axisPen);
-	p->drawLine(axisGap >> 1, this->height() - axisGap, this->width() - (axisGap >> 1), this->height() - axisGap);	//x axis
-	p->drawLine(axisGap, this->height() - (axisGap >> 1), axisGap, axisGap >> 1);		//y axis
+	p->drawLine(0 - axisGap >> 1, 0, img.width() - axisGap - (axisGap >> 1),0);	//x axis
+	p->drawLine(0, img.height() - axisGap - (axisGap >> 1), 0, 0 - axisGap >> 1);		//y axis
 
 	//draw the dashline 
-	p->restore();			//restore the transform
 	int xinter = getXInterval(), yinter = getYInterval();
 // 	int xlen = this->width() - axisGap - (axisGap >> 1), ylen = this->height() - axisGap - (axisGap >> 1);		//the display length in the widget
 // 	int xdis = xBegin - xEnd, ydis = yBegin - yEnd;		//the actual distance of the data
+	double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
 	QPen dashPen;
 	dashPen.setStyle(Qt::DashLine);
-// 	dashPen.setBrush(Qt::darkGray);
-	dashPen.setWidth(100);
+	dashPen.setBrush(Qt::darkGray);
 	p->setPen(dashPen);
+// 	QFont numFont(oriFont);
+// 	numFont.setPointSize(10);
+// 	p->setFont(numFont);
 	//vertical line
-	p->drawLine(0, 0, 4000, 4000);
-	p->drawLine(4000, 4000, 6000, 3000);
-	p->drawLine(8000, 4000, 10000, 4000);
-	for (int offsetx = xinter; offsetx < xEnd - xBegin; offsetx += xinter)
+	for (int offsetx = xinter; offsetx < (xEnd - xBegin); offsetx += xinter)
 	{
-		
-		p->drawLine(offsetx, 0, offsetx, yEnd - yBegin);		
-
+		//draw vertical line and the number under it
+		p->drawLine(offsetx * xFactor, 0, offsetx * xFactor, img.height() - axisGap - (axisGap >> 1));		
+		p->drawText(offsetx * xFactor - 5, -5, QString::number(xBegin + offsetx).insert(4, '.'));
 	}
-	p->drawLine(xEnd - xBegin, 0, xEnd - xBegin, yEnd - yBegin);
+	//draw the first and the last number on x axis
+	p->drawText(0, 0, QString::number(xBegin).insert(4, '.'));
+	p->drawText((xEnd - xBegin) * xFactor, 0, QString::number(xEnd).insert(4,'.'));
 
+	p->setFont(oriFont);	//reset the original font
 	p->setPen(oriPen);		//reset the original pen
 
 }
@@ -95,9 +128,10 @@ void displayLabel::drawCoordinateSys(QPainter *p)
 void displayLabel::transformCoordinateSys(QPainter *p)
 {
 
-	p->translate(axisGap, this->height() - axisGap);
+	p->translate(axisGap, img.height() - axisGap);
+	p->scale(1, -1);
 // 	p->translate(0 - (qint32)xBegin, 0 - (qint32)yBegin);
-	p->scale((qreal)(this->width() - axisGap - (axisGap >> 1)) / (qreal)(xEnd - xBegin), (qreal)(axisGap + (axisGap >> 1) - this->height()) / (yEnd - yBegin));
+// 	p->scale((qreal)(img.width() - axisGap - (axisGap >> 1)) / (qreal)(xEnd - xBegin), (qreal)(axisGap + (axisGap >> 1) - img.height()) / (yEnd - yBegin));
 }
 
 //get the x axis interval(display scale) for dash-line drawing, depending on x_begin and x_end
