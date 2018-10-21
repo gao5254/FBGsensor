@@ -6,6 +6,9 @@ displayLabel::displayLabel(QWidget *parent)
 	: QLabel(parent)
 {
 	ui.setupUi(this);
+
+	setContentsMargins(25, 25, 25, 25);
+	setFrameStyle(QFrame::Box);
 }
 
 displayLabel::~displayLabel()
@@ -43,16 +46,15 @@ void displayLabel::paintEvent(QPaintEvent *e)
 	//paint the coordinate system
 	drawCoordinateSys(painter);
 
-
 }
 
 //draw the coordinate system, including the x-axis and y-axis, and dashline in the area
 void displayLabel::drawCoordinateSys(QPainter *p)
 {
 	//TODO:fix this
+	qDebug() << p->transform();
 	p->save();		//save the transform
 	p->resetTransform();	//reset the transform
-	qDebug() << p->transform();
 
 	QPen oriPen = p->pen();		//store the original pen
 	
@@ -70,9 +72,13 @@ void displayLabel::drawCoordinateSys(QPainter *p)
 // 	int xdis = xBegin - xEnd, ydis = yBegin - yEnd;		//the actual distance of the data
 	QPen dashPen;
 	dashPen.setStyle(Qt::DashLine);
-	dashPen.setBrush(Qt::darkGray);
+// 	dashPen.setBrush(Qt::darkGray);
+	dashPen.setWidth(100);
 	p->setPen(dashPen);
 	//vertical line
+	p->drawLine(0, 0, 4000, 4000);
+	p->drawLine(4000, 4000, 6000, 3000);
+	p->drawLine(8000, 4000, 10000, 4000);
 	for (int offsetx = xinter; offsetx < xEnd - xBegin; offsetx += xinter)
 	{
 		
