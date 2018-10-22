@@ -45,11 +45,9 @@ void displayLabel::setIndex(int index)
 void displayLabel::rePaintImage()
 {
 	//check if size changes
-	qDebug() << this->size() << img.size() <<this->height();
 	if (this->size() != img.size())
 	{
 		img = img.scaled(this->size(), Qt::IgnoreAspectRatio);
-		qDebug() << img.size();
 		img.fill(Qt::white);
 	}
 	QPainter painter(&img);
@@ -76,6 +74,7 @@ void displayLabel::paintEvent(QPaintEvent *event)
 
 	QPainter painter(this);
 	QRect dRect = event->rect();
+	qDebug() << dRect;
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.drawImage(dRect, img, dRect);
 
@@ -94,7 +93,7 @@ void displayLabel::drawCoordinateSys(QPainter *p)
 	axisPen.setWidth(3);		//bold line to draw axis
 	p->setPen(axisPen);
 	p->drawLine(0 - axisGap >> 1, 0, img.width() - axisGap - (axisGap >> 1),0);	//x axis
-	p->drawLine(0, img.height() - axisGap - (axisGap >> 1), 0, 0 - axisGap >> 1);		//y axis
+	p->drawLine(0, img.height() - axisGap - (axisGap >> 1), 0, 0);		//y axis
 
 	//draw the dashline 
 	int xinter = getXInterval(), yinter = getYInterval();
@@ -105,22 +104,52 @@ void displayLabel::drawCoordinateSys(QPainter *p)
 	dashPen.setStyle(Qt::DashLine);
 	dashPen.setBrush(Qt::darkGray);
 	p->setPen(dashPen);
-// 	QFont numFont(oriFont);
-// 	numFont.setPointSize(10);
-// 	p->setFont(numFont);
 	//vertical line
 	for (int offsetx = xinter; offsetx < (xEnd - xBegin); offsetx += xinter)
 	{
-		//draw vertical line and the number under it
+		//draw vertical line 
 		p->drawLine(offsetx * xFactor, 0, offsetx * xFactor, img.height() - axisGap - (axisGap >> 1));		
-		p->drawText(offsetx * xFactor - 5, -5, QString::number(xBegin + offsetx).insert(4, '.'));
+// 		p->drawText(offsetx * xFactor - 5, -5, QString::number(xBegin + offsetx).insert(4, '.'));
 	}
-	//draw the first and the last number on x axis
-	p->drawText(0, 0, QString::number(xBegin).insert(4, '.'));
-	p->drawText((xEnd - xBegin) * xFactor, 0, QString::number(xEnd).insert(4,'.'));
+	//horizontal line
+	for (int offsety = yinter; offsety < (yEnd - yBegin); offsety += yinter)
+	{
+		//draw horizontal line 
+		p->drawLine(0, offsety * yFactor, img.width() - axisGap - (axisGap >> 1), offsety * yFactor);
+	}
 
-	p->setFont(oriFont);	//reset the original font
+
+	//draw numbers
 	p->setPen(oriPen);		//reset the original pen
+	QFont numFont(oriFont);
+	numFont.setPointSize(10);
+	numFont.setFamily(QString::fromLocal8Bit("Î¢ÈíÑÅºÚ,ºÚÌå"));
+	p->setFont(numFont);
+
+	p->save();		//save the transform
+	p->scale(1, -1);
+	for (int offsetx = 0; offsetx < (xEnd - xBegin); offsetx += xinter)
+	{
+		//draw x axis number 
+		p->drawText(offsetx * xFactor - 30, 15, QString::number(xBegin + offsetx));
+	}
+	for (int offsety = 0; offsety < (yEnd - yBegin); offsety += yinter)
+	{
+		//draw y axis number 
+		p->drawText(-35, -offsety * yFactor + 5, QString::number(yBegin +offsety));
+	}
+// 	p->drawText(-40, -((int)yEnd - (int)yBegin) * yFactor + 5, QString::number(yEnd));
+// 	p->drawText((xEnd - xBegin) * xFactor - 20, 10, QString::number(xEnd));
+
+	//draw titles
+	numFont.setPointSize(12);
+// 	numFont.setBold(true);
+	p->setFont(numFont);
+	p->drawText((this->width() - axisGap * 2) >> 1, 35, QString::fromLocal8Bit("²¨³¤/pm"));
+	p->drawText(-15, -(this->height() - axisGap - 20), QString::fromLocal8Bit("ADÖµ"));
+	
+	p->restore();
+	p->setFont(oriFont);	//reset the original font
 
 }
 
