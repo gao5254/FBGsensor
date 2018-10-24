@@ -1,6 +1,8 @@
 #include "fbgsensor.h"
 #include <QMessageBox>
 #include <QTimer>
+#include <QDebug>
+#include <QColorDialog>
 #include "serialportmanager.h"
 #include "doublevalidator.h"
 
@@ -23,13 +25,19 @@ FBGsensor::FBGsensor(QWidget *parent)
 	ui.statusBar->addWidget(statusLabel);
 
 	//init combobox
-	ui.channelCBBox->addItem(QString::fromLocal8Bit("全部"));
-	ui.channelCBBox->addItem(QString::fromLocal8Bit("通道1"));
-	ui.channelCBBox->addItem(QString::fromLocal8Bit("通道2"));
-	ui.channelCBBox->setCurrentIndex(0);
+// 	ui.channelCBBox->addItem(QString::fromLocal8Bit("全部"));
+// 	ui.channelCBBox->addItem(QString::fromLocal8Bit("通道1"));
+// 	ui.channelCBBox->addItem(QString::fromLocal8Bit("通道2"));
+// 	ui.channelCBBox->setCurrentIndex(0);
 
 	//init tabwidget
 	ui.tabWidget->setCurrentIndex(0);
+
+	//init color btn
+	ui.chnl1Color->setStyleSheet("QToolButton#chnl1Color{background-color: " + QColor(Qt::blue).name() + ";}"
+		"QToolButton#chnl1Color::pressed { background-color: " + QColor(QColor(Qt::blue).darker(150)).name() + ";}");
+	ui.chnl2Color->setStyleSheet("QToolButton#chnl2Color{background-color: " + QColor(Qt::red).name() + ";}"
+		"QToolButton#chnl2Color::pressed { background-color: " + QColor(QColor(Qt::red).darker(150)).name() + ";}");
 
 	//disable btn and edit and tabwidget, set validator
 	ui.setParaBtn->setEnabled(false);
@@ -153,11 +161,50 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 	}
 }
 
-//pass the index to label, and update it
-void FBGsensor::on_channelCBBox_currentIndexChanged(int index)
+//show the color dialog, change the color of the btn and pass it to showlabel
+void FBGsensor::on_chnl1Color_clicked()
 {
-	ui.showLabel->setIndex(index);
+	QColor color = QColorDialog::getColor(Qt::black, this);
+	if (!color.isValid())
+	{
+		return;
+	}
+	ui.chnl1Color->setStyleSheet("QToolButton#chnl1Color{background-color: " + color.name() + ";}"
+		"QToolButton#chnl1Color::pressed { background-color: " + QColor(color.darker(150)).name() + ";}");
+	ui.showLabel->setChnnelInfo(0, ui.chnl1ChkBox->isChecked(), color);
 }
+
+//show the color dialog, change the color of the btn and pass it to showlabel
+void FBGsensor::on_chnl2Color_clicked()
+{
+	QColor color = QColorDialog::getColor(Qt::black, this);
+	if (!color.isValid())
+	{
+		return;
+	}
+	ui.chnl2Color->setStyleSheet("QToolButton#chnl2Color{background-color: " + color.name() + ";}"
+		"QToolButton#chnl2Color::pressed { background-color: " + QColor(color.darker(150)).name() + ";}");
+	ui.showLabel->setChnnelInfo(1, ui.chnl2ChkBox->isChecked(), color);
+
+}
+
+//notify showlabel
+void FBGsensor::on_chnl1ChkBox_toggled(bool checked)
+{
+	ui.showLabel->setChnnelInfo(0, ui.chnl1ChkBox->isChecked());
+}
+
+void FBGsensor::on_chnl2ChkBox_toggled(bool checked)
+{
+	ui.showLabel->setChnnelInfo(1, ui.chnl2ChkBox->isChecked());
+
+}
+
+//pass the index to label, and update it
+// void FBGsensor::on_channelCBBox_currentIndexChanged(int index)
+// {
+// 	ui.showLabel->setIndex(index);
+// }
 
 //process the received msg, depending on the 5th bit 
 void FBGsensor::msgProcess(QByteArray msg)
