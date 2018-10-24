@@ -12,6 +12,8 @@ displayLabel::displayLabel(QWidget *parent)
 	img = QImage(this->size(), QImage::Format_RGB32);
 	img.fill(Qt::white);
 	rePaintImage();
+
+	setAttribute(Qt::WA_OpaquePaintEvent);		//all the area will be painted opaquely
 }
 
 displayLabel::~displayLabel()
@@ -58,7 +60,8 @@ void displayLabel::rePaintImage()
 	//paint the coordinate system
 	drawCoordinateSys(&painter);
 
-
+	//paint lines on img
+	drawDataLines(&painter);
 }
 
 void displayLabel::resizeEvent(QResizeEvent *event) 
@@ -163,73 +166,21 @@ void displayLabel::transformCoordinateSys(QPainter *p)
 // 	p->scale((qreal)(img.width() - axisGap - (axisGap >> 1)) / (qreal)(xEnd - xBegin), (qreal)(axisGap + (axisGap >> 1) - img.height()) / (yEnd - yBegin));
 }
 
+//draw the lines from the data
+void displayLabel::drawDataLines(QPainter *p)
+{
+	if (pData == nullptr)
+	{
+		return;
+	}
+	//decide which channel to draw
+
+}
+
 //get the x axis interval(display scale) for dash-line drawing, depending on x_begin and x_end
 int displayLabel::getXInterval()
 {
 	int dis = xEnd - xBegin;
-// 	//if distance less than 500, internal is 500
-// 	if (dis <5000)
-// 	{
-// 		return 500;
-// 	}
-// 	//the default step is 6 or 7, test which interval is more close to the nearest 1000*n number
-// 	int inter6 = dis / 6, inter7 = dis / 7;
-// 	if (qMin(inter6 % 1000, 1000 - inter6 % 1000) <= qMin(inter7 % 1000, 1000 - inter7 % 1000))
-// 	{
-// 		return (inter6 + 500) / 1000 * 1000;
-// 	} 
-// 	else
-// 	{
-// 		return (inter7 + 500) / 1000 * 1000;
-// 	}
-// 	if (dis < 10)
-// 	{
-// 		return 1;
-// 	} 
-// 	else if (dis < 20)
-// 	{
-// 		return 2;
-// 	}
-// 	else if (dis < 50)
-// 	{
-// 		return 5;
-// 	} 
-// 	else if (dis < 100)
-// 	{
-// 		return 10;
-// 	}
-// 	else if (dis < 200)
-// 	{
-// 		return 20;
-// 	}
-// 	else if (dis < 500)
-// 	{
-// 		return 50;
-// 	}
-// 	else if (dis < 1000)
-// 	{
-// 		return 100;
-// 	}
-// 	else if (dis < 2000)
-// 	{
-// 		return 200;
-// 	}
-// 	else if (dis < 5000)
-// 	{
-// 		return 500;
-// 	}
-// 	else if (dis < 10000)
-// 	{
-// 		return 1000;
-// 	}
-// 	else if (dis < 20000)
-// 	{
-// 		return 2000;
-// 	}
-// 	else 
-// 	{
-// 		return 5000;
-// 	}
 
 	//the interval depends on the total distance, if dis is less than a number, then the interval is number/10
 	int arr[] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 };
@@ -243,57 +194,6 @@ int displayLabel::getXInterval()
 int displayLabel::getYInterval()
 {
 	int dis = yEnd - yBegin;
-// 	//if distance less than 500, internal is 500
-// 	if (dis < 500)
-// 	{
-// 		return 50;
-// 	}
-// 	//the default step is 6 or 7, test which interval is more close to the nearest 1000*n number
-// 	int inter6 = dis / 6, inter7 = dis / 7;
-// 	if (qMin(inter6 % 100, 100 - inter6 % 100) <= qMin(inter7 % 100, 100 - inter7 % 100))
-// 	{
-// 		return (inter6 + 50) / 100 * 100;
-// 	}
-// 	else
-// 	{
-// 		return (inter7 + 50) / 100 * 100;
-// 	}
-// 	if (dis < 10)
-// 	{
-// 		return 1;
-// 	}
-// 	else if (dis < 20)
-// 	{
-// 		return 2;
-// 	}
-// 	else if (dis < 50)
-// 	{
-// 		return 5;
-// 	}
-// 	else if (dis < 100)
-// 	{
-// 		return 10;
-// 	}
-// 	else if (dis < 200)
-// 	{
-// 		return 20;
-// 	}
-// 	else if (dis < 500)
-// 	{
-// 		return 50;
-// 	}
-// 	else if (dis < 1000)
-// 	{
-// 		return 100;
-// 	}
-// 	else if (dis < 2000)
-// 	{
-// 		return 200;
-// 	}
-// 	else 
-// 	{
-// 		return 500;
-// 	}
 
 	//the interval depends on the total distance
 	int arr[] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000 };

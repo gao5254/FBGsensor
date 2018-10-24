@@ -25,8 +25,11 @@ private:
 
 	void drawCoordinateSys(QPainter *p);
 	void transformCoordinateSys(QPainter *p);
+	void drawDataLines(QPainter *p);
 	int getXInterval();
 	int getYInterval();
+
+
 protected:
 	void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 	void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
