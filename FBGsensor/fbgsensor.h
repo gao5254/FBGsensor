@@ -17,7 +17,12 @@ public slots:
 	void on_openDeviceBtn_toggled(bool chk);		//打开设备按钮槽函数，自动连接
 	void on_setParaBtn_clicked();			//设置设备参数槽函数，自动连接
 	void on_scanBtn_toggled(bool chk);		//start scan 
-	void on_channelCBBox_currentIndexChanged(int index);		//pass the index to label, and update it
+// 	void on_channelCBBox_currentIndexChanged(int index);		//pass the index to label, and update it
+	void on_chnl1Color_clicked();
+	void on_chnl2Color_clicked();
+	void on_chnl1ChkBox_toggled(bool checked);
+	void on_chnl2ChkBox_toggled(bool checked);
+
 
 //已在designer中连接 	void on_openDeviceAct_triggered();		//打开设备动作槽函数，自动连接
 private:

@@ -36,9 +36,14 @@ void displayLabel::setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 n, QVec
 }
 
 //change the channel to show
-void displayLabel::setIndex(int index)
+void displayLabel::setChnnelInfo(int index, bool b, QColor c /*= QColor::Invalid*/)
 {
-	chToShow = index;
+// 	chToShow = index;
+	channelInfo[index].checked = b;
+	if (c.isValid())
+	{
+		channelInfo[index].lineColor = c;
+	}
 	rePaintImage();
 	update();
 }
@@ -77,7 +82,7 @@ void displayLabel::paintEvent(QPaintEvent *event)
 
 	QPainter painter(this);
 	QRect dRect = event->rect();
-	qDebug() << dRect;
+// 	qDebug() << dRect;
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.drawImage(dRect, img, dRect);
 
