@@ -3,6 +3,9 @@
 #include <QTimer>
 #include <QDebug>
 #include <QColorDialog>
+#include <QStandardPaths>
+#include <QDateTime>
+#include <QFile>
 #include "serialportmanager.h"
 #include "doublevalidator.h"
 
@@ -26,6 +29,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 	spectrumData[1].fill(3052);
 	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 	//delete later
+
 
 	//init statusbar
 	statusLabel = new QLabel();
@@ -157,6 +161,22 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 			//discontinuously scan
 			ui.scanBtn->setText(QString::fromLocal8Bit("É¨ÃèÖÐ"));
 		}
+
+		//temporary code, write the spectrum data to files in desktop
+		if (file != nullptr)
+		{
+			delete file;
+		}
+		file = new QFile(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDateTime::currentDateTime().toString() + ".csv", this);
+		if (file->open(QFile::WriteOnly | QFile::Append | QFile::Text))
+		{
+			QTextStream data(file);
+			data << waveStart << ',' << waveEnd << ',' << waveStep << endl;
+
+		}
+
+		//delete later
+
 		scanStarted = true;
 		currentChannel = 0;
 		sendMsgTimer->disconnect();
@@ -313,6 +333,12 @@ void FBGsensor::spectrumSample()
 		ui.showLabel->update();
 		currentChannel = 0;
 		//TODO: analyze the data
+
+
+		//write in the file
+		QTextStream data(file);
+		data << 
+		//delete later
 
 		//check if continuously
 		if (ui.continuousCheck->isChecked())

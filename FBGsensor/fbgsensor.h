@@ -2,8 +2,10 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_fbgsensor.h"
+
 //pre-declaration
 class SerialPortManager;
+class QFile;
 
 class FBGsensor : public QMainWindow
 {
@@ -34,6 +36,7 @@ private:
 	QLabel *statusLabel;		//label showing msg in the statusbar
 	QTimer *sendMsgTimer;		//timer to send msg repeatly when there's no reply
 	QVector<quint16> *spectrumData = nullptr;	//a pointer to the data
+	QFile *file;
 	bool firstSetInfo=true;			//if first set info, change the status of edit and btn
 // 	bool scanContinuously = false;		//if the scanning is continuously, resend msg after receiving msg
 	bool scanStarted = false;		//to stop the scan procedure
