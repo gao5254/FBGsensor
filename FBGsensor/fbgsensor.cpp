@@ -11,6 +11,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 {
 	ui.setupUi(this);
 
+
 	//initialize member
 	serialPManager = new SerialPortManager((QObject*)this);
 	sendMsgTimer = new QTimer(this) ;
@@ -19,6 +20,12 @@ FBGsensor::FBGsensor(QWidget *parent)
 	{
 		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
 	}
+
+	//data for test
+	spectrumData[0].fill(2048);
+	spectrumData[1].fill(3052);
+	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
+	//delete later
 
 	//init statusbar
 	statusLabel = new QLabel();
@@ -51,7 +58,9 @@ FBGsensor::FBGsensor(QWidget *parent)
 	ui.wavStepEdit->setEnabled(false);
 	ui.wavStepEdit->setValidator(new DoubleValidator(0.010, 0.040, 3, 0.020, ui.wavStepEdit));
 
-	ui.scanTab->setEnabled(false);
+// 	ui.scanTab->setEnabled(false);
+	ui.continuousCheck->setEnabled(false);
+	ui.scanBtn->setEnabled(false);
 
 	//connnect
 	connect(serialPManager, &SerialPortManager::msgReceived, this, &FBGsensor::msgProcess);
@@ -99,7 +108,10 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 		ui.wavEndEdit->setEnabled(false);
 		ui.wavStartEdit->setEnabled(false);
 		ui.wavStepEdit->setEnabled(false);
-		ui.scanTab->setEnabled(false);
+// 		ui.scanTab->setEnabled(false);
+		ui.continuousCheck->setEnabled(false);
+		ui.scanBtn->setEnabled(false);
+
 		//change text on this btn
 		ui.openDeviceBtn->setText(QString::fromLocal8Bit("打开设备"));
 	}
@@ -268,7 +280,10 @@ void FBGsensor::showDeviceInfo(QByteArray msg)
 		ui.wavEndEdit->setEnabled(true);
 		ui.wavStartEdit->setEnabled(true);
 		ui.wavStepEdit->setEnabled(true);
-		ui.scanTab->setEnabled(true);
+// 		ui.scanTab->setEnabled(true);
+		ui.continuousCheck->setEnabled(false);
+		ui.scanBtn->setEnabled(false);
+
 		//change the text
 		ui.openDeviceBtn->setText(QString::fromLocal8Bit("关闭设备"));
 		firstSetInfo = false;

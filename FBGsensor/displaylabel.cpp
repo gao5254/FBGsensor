@@ -13,6 +13,11 @@ displayLabel::displayLabel(QWidget *parent)
 	img.fill(Qt::white);
 	rePaintImage();
 
+	//init the channelInfo
+	channelInfo[0].lineColor = QColor(Qt::blue);
+	channelInfo[1].lineColor = QColor(Qt::red);
+
+
 	setAttribute(Qt::WA_OpaquePaintEvent);		//all the area will be painted opaquely
 }
 
@@ -55,8 +60,9 @@ void displayLabel::rePaintImage()
 	if (this->size() != img.size())
 	{
 		img = img.scaled(this->size(), Qt::IgnoreAspectRatio);
-		img.fill(Qt::white);
 	}
+	img.fill(Qt::white);
+
 	QPainter painter(&img);
 
 	//transform the painter coordinate system
@@ -178,8 +184,27 @@ void displayLabel::drawDataLines(QPainter *p)
 	{
 		return;
 	}
-	//decide which channel to draw
-
+	QPen oriPen = p->pen();
+	//decide which channel to draw 
+	for (int i = 0; i < chNum;i++)
+	{
+		if (!channelInfo[i].checked)
+		{
+			continue;
+		}
+		QPen linePen(channelInfo[i].lineColor, 2);
+		p->setPen(linePen);
+		QPolygonF polygon;
+		double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), 
+			yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
+		int index = (xBegin - wStart) / wStep;
+		for (int offsetx = 0; offsetx <= (xEnd - xBegin); offsetx += wStep, index++)
+		{
+			polygon << QPointF(offsetx * xFactor, (pData[i].at(index) - yBegin) * yFactor);
+		}
+		p->drawPolyline(polygon);
+	}
+	p->setPen(oriPen);
 }
 
 //get the x axis interval(display scale) for dash-line drawing, depending on x_begin and x_end

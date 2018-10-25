@@ -24,7 +24,7 @@ private:
 	QImage img;
 	struct  
 	{
-		bool checked;
+		bool checked = true;
 		QColor lineColor;
 	}channelInfo[2];
 
