@@ -168,22 +168,23 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 		}
 
 		//temporary code, write the spectrum data to files in desktop
-		if (csvfile != nullptr)
-		{
-			delete csvfile;
-		}
-		csvfile = new QFile(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + '/' + QDateTime::currentDateTime().toString() + ".csv", this);
-		if (csvfile->open(QFile::WriteOnly | QFile::Text))
-		{
-			QTextStream data(csvfile);
-			data << waveStart << ',' << waveEnd << ',' << waveStep << endl;
-
-		}
+// 		if (csvfile != nullptr)
+// 		{
+// 			delete csvfile;
+// 		}
+// 		csvfile = new QFile(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + '/' + QDateTime::currentDateTime().toString("yyyyMMdd-HHmm") + ".csv", this);
+// 		if (csvfile->open(QFile::WriteOnly | QFile::Text))
+// 		{
+// 			QTextStream data(csvfile);
+// 			data << waveStart << ',' << waveEnd << ',' << waveStep << endl;
+// 
+// 		}
 
 		//delete later
 
 		scanStarted = true;
 		currentChannel = 0;
+// 		t.start();
 		sendMsgTimer->disconnect();
 		connect(sendMsgTimer, &QTimer::timeout, serialPManager, &SerialPortManager::scanOnce);
 		serialPManager->scanOnce();
@@ -306,8 +307,8 @@ void FBGsensor::showDeviceInfo(QByteArray msg)
 		ui.wavStartEdit->setEnabled(true);
 		ui.wavStepEdit->setEnabled(true);
 // 		ui.scanTab->setEnabled(true);
-		ui.continuousCheck->setEnabled(false);
-		ui.scanBtn->setEnabled(false);
+		ui.continuousCheck->setEnabled(true);
+		ui.scanBtn->setEnabled(true);
 
 		//change the text
 		ui.openDeviceBtn->setText(QString::fromLocal8Bit("πÿ±’…Ë±∏"));
@@ -331,6 +332,8 @@ void FBGsensor::spectrumSample()
 	{
 		return;
 	}
+// 	qDebug() << t.elapsed();
+
 	if (currentChannel >= (quint8)channelNum)
 	{
 		//repaint tht label
@@ -342,16 +345,19 @@ void FBGsensor::spectrumSample()
 
 
 		//write in the file
-		QTextStream data(csvfile);
-		for (int i = 0; i < channelNum; i++)
-		{
-			data << i <<','<< spectrumData[i].size();
-			for each (quint16 ad in spectrumData[i])
-			{
-				data << ',' << ad;
-			}
-			data << endl;
-		}
+// 		if (csvfile->exists())
+// 		{
+// 			QTextStream data(csvfile);
+// 			for (int i = 0; i < channelNum; i++)
+// 			{
+// 				data << i <<','<< spectrumData[i].size();
+// 				for each (quint16 ad in spectrumData[i])
+// 				{
+// 					data << ',' << ad;
+// 				}
+// 				data << endl;
+// 			}
+// 		}
 		//delete later
 
 		//check if continuously
@@ -370,6 +376,7 @@ void FBGsensor::spectrumSample()
 	}
 	else
 	{
+// 		t.start();
 		//continue get data in other channels
 		serialPManager->getSpectrumData(currentChannel);
 	}
@@ -378,6 +385,7 @@ void FBGsensor::spectrumSample()
 //extract the AD value from the msg 
 void FBGsensor::loadSpectrumData(QByteArray msg)
 {
+// 	qDebug() <<t.elapsed();
 	//if scan is not started, return
 	if (!scanStarted)
 	{

@@ -195,12 +195,16 @@ void SerialPortManager::receiveMsg()
 	//check for the header
 	QByteArray header = QByteArray::fromHex("AA55FFFFFF");
 	int idx=0;
-	//check continuously
-	while ((idx = arrBuffer->indexOf(header,idx)) != -1)
+	//if the length less than 10,it is not complete, do nothing 
+	while ((idx = arrBuffer->indexOf(header, idx)) != -1)
 	{
 		//if header is found, check if its length is enough
+		if (arrBuffer->size() < idx + 8)
+		{
+			return;
+		}
 		quint16 l = getNum(*arrBuffer, idx + 6);
-		if (idx + 8 + l <= arrBuffer->size())
+		if (arrBuffer->size() >= idx + 8 + l)
 		{
 			//if length is enough, extract the msg array, check CRC16
 			QByteArray msg = arrBuffer->mid(idx, l + 8);
@@ -218,4 +222,5 @@ void SerialPortManager::receiveMsg()
 			idx++;
 		}
 	}
+
 }
