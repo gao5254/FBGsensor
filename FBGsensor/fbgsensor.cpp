@@ -25,9 +25,10 @@ FBGsensor::FBGsensor(QWidget *parent)
 	}
 
 	//data for test
-	spectrumData[0].fill(2048);
-	spectrumData[1].fill(3052);
-	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
+// 	spectrumData[0].fill(2048);
+// 	spectrumData[1].fill(3052);
+// 	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
+// 	qDebug() << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	//delete later
 
 
@@ -73,6 +74,10 @@ FBGsensor::FBGsensor(QWidget *parent)
 FBGsensor::~FBGsensor()
 {
 	delete[] spectrumData;
+	if (csvfile != nullptr)
+	{
+		delete csvfile;
+	}
 }
 
 /*如果需要打开，则
@@ -163,14 +168,14 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 		}
 
 		//temporary code, write the spectrum data to files in desktop
-		if (file != nullptr)
+		if (csvfile != nullptr)
 		{
-			delete file;
+			delete csvfile;
 		}
-		file = new QFile(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDateTime::currentDateTime().toString() + ".csv", this);
-		if (file->open(QFile::WriteOnly | QFile::Append | QFile::Text))
+		csvfile = new QFile(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + '/' + QDateTime::currentDateTime().toString() + ".csv", this);
+		if (csvfile->open(QFile::WriteOnly | QFile::Text))
 		{
-			QTextStream data(file);
+			QTextStream data(csvfile);
 			data << waveStart << ',' << waveEnd << ',' << waveStep << endl;
 
 		}
@@ -332,12 +337,21 @@ void FBGsensor::spectrumSample()
 		ui.showLabel->rePaintImage();
 		ui.showLabel->update();
 		currentChannel = 0;
+
 		//TODO: analyze the data
 
 
 		//write in the file
-		QTextStream data(file);
-		data << 
+		QTextStream data(csvfile);
+		for (int i = 0; i < channelNum; i++)
+		{
+			data << i <<','<< spectrumData[i].size();
+			for each (quint16 ad in spectrumData[i])
+			{
+				data << ',' << ad;
+			}
+			data << endl;
+		}
 		//delete later
 
 		//check if continuously
