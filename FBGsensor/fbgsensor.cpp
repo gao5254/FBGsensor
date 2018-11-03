@@ -25,9 +25,9 @@ FBGsensor::FBGsensor(QWidget *parent)
 	}
 
 	//data for test
-// 	spectrumData[0].fill(2048);
-// 	spectrumData[1].fill(3052);
-// 	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
+	spectrumData[0].fill(2048);
+	spectrumData[1].fill(3052);
+	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 // 	qDebug() << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	//delete later
 

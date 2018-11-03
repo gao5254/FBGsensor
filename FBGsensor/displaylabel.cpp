@@ -95,7 +95,8 @@ void displayLabel::mouseMoveEvent(QMouseEvent *event)
 		QPoint distance = startPoint - endPoint;
 		if (distance.manhattanLength() > 10)
 		{
-			update(QRect(startPoint, endPoint).normalized().adjusted(1, 1, 1, 1));
+// 			update(QRect(startPoint, endPoint).normalized().adjusted(-5, -5, 5, 5));
+			update();
 		}
 	}
 }
@@ -109,14 +110,42 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 		iszooming = false;
 		if ((startPoint - endPoint).manhattanLength() > 10)
 		{
-			//zoom the image
+			//transform the rec
 			QRect zoomRect = imgTransform.mapRect(QRect(startPoint, endPoint)).normalized();
-			double xFactor = (double)(xEnd - xBegin) / (img.width() - axisGap - (axisGap >> 1)),
-				yFactor = (double)(yEnd - yBegin) / (img.height() - axisGap - (axisGap >> 1));
-
+			//constrain the rec
+			if (zoomRect.x() < 0)
+			{
+				zoomRect.setX(0);
+			}
+			if (zoomRect.y() < 0)
+			{
+				zoomRect.setY(0);
+			}
+			if (zoomRect.width() > (this->width() - axisGap - (axisGap >> 1) - zoomRect.x()))
+			{
+				zoomRect.setWidth(this->width() - axisGap - (axisGap >> 1));
+			}
+			if (zoomRect.height() > (this->height() - axisGap - (axisGap >> 1) - zoomRect.y()))
+			{
+				zoomRect.setHeight(this->height() - axisGap - (axisGap >> 1));
+			}
+			//zoom the image
+			double xFactor = (double)(xEnd - xBegin) / (this->width() - axisGap - (axisGap >> 1)),
+				yFactor = (double)(yEnd - yBegin) / (this->height() - axisGap - (axisGap >> 1));
+			xEnd = (zoomRect.x() + zoomRect.width()) * xFactor + xBegin;
+			xBegin = zoomRect.x() * xFactor + xBegin;
+			yEnd = (zoomRect.y() + zoomRect.height()) * yFactor + yBegin;
+			yBegin = zoomRect.y() * yFactor + yBegin;
+			// repaint the img
+			rePaintImage();
+			update();
 		} 
 		else
 		{
+			//set the cursor position
+			int preX = (cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
+			cursorPos = endPoint.x() * (xEnd - xBegin) / (this->width() - axisGap - (axisGap >> 1)) + xBegin;
+			update(preX - 5, 0, 10, this->height());
 		}
 	}
 }
@@ -150,8 +179,16 @@ void displayLabel::paintEvent(QPaintEvent *event)
 		painter.setPen(oriPen);
 
 	}
-
-
+	
+	//draw the cursor 
+	if (cursorPos > xBegin && cursorPos < xEnd)
+	{
+		QPen cursorPen;
+		cursorPen.setWidth(2);
+		painter.setPen(cursorPen);
+		int xPos = (cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
+		painter.drawLine(xPos, 0, xPos, this->height());
+	}
 
 }
 
@@ -173,7 +210,8 @@ void displayLabel::drawCoordinateSys(QPainter *p)
 	int xinter = getXInterval(), yinter = getYInterval();
 // 	int xlen = this->width() - axisGap - (axisGap >> 1), ylen = this->height() - axisGap - (axisGap >> 1);		//the display length in the widget
 // 	int xdis = xBegin - xEnd, ydis = yBegin - yEnd;		//the actual distance of the data
-	double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
+	double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), 
+		yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
 	QPen dashPen;
 	dashPen.setStyle(Qt::DashLine);
 	dashPen.setBrush(Qt::darkGray);
