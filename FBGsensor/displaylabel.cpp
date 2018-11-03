@@ -75,6 +75,52 @@ void displayLabel::rePaintImage()
 	drawDataLines(&painter);
 }
 
+//when the mouse pressed, record the position
+void displayLabel::mousePressEvent(QMouseEvent *event) 
+{
+	if (event->button() == Qt::LeftButton)
+	{
+		startPoint = event->pos();
+		endPoint = event->pos();
+		iszooming = true;
+	}
+}
+
+//when the mouse move, check if the distance is greater than 10,then draw a rectangle
+void displayLabel::mouseMoveEvent(QMouseEvent *event) 
+{
+	if ((event->buttons() & Qt::LeftButton) && iszooming)
+	{
+		endPoint = event->pos();
+		QPoint distance = startPoint - endPoint;
+		if (distance.manhattanLength() > 10)
+		{
+			update(QRect(startPoint, endPoint).normalized().adjusted(1, 1, 1, 1));
+		}
+	}
+}
+
+//when the mouse release, if the distance is small, draw a cursor, else zoom the image
+void displayLabel::mouseReleaseEvent(QMouseEvent *event) 
+{
+	if (event->button() == Qt::LeftButton && iszooming)
+	{
+		endPoint = event->pos();
+		iszooming = false;
+		if ((startPoint - endPoint).manhattanLength() > 10)
+		{
+			//zoom the image
+			QRect zoomRect = imgTransform.mapRect(QRect(startPoint, endPoint)).normalized();
+			double xFactor = (double)(xEnd - xBegin) / (img.width() - axisGap - (axisGap >> 1)),
+				yFactor = (double)(yEnd - yBegin) / (img.height() - axisGap - (axisGap >> 1));
+
+		} 
+		else
+		{
+		}
+	}
+}
+
 void displayLabel::resizeEvent(QResizeEvent *event) 
 {
 	rePaintImage();
@@ -88,9 +134,23 @@ void displayLabel::paintEvent(QPaintEvent *event)
 
 	QPainter painter(this);
 	QRect dRect = event->rect();
+	QPen oriPen = painter.pen();
+
 // 	qDebug() << dRect;
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.drawImage(dRect, img, dRect);
+
+	//draw the zooming rectangle
+	if (iszooming && ((startPoint - endPoint).manhattanLength() >11))
+	{
+		QPen recPen;
+		recPen.setStyle(Qt::DashLine);
+		painter.setPen(recPen);
+		painter.drawRect(QRect(startPoint, endPoint).normalized());
+		painter.setPen(oriPen);
+
+	}
+
 
 
 }
@@ -173,6 +233,7 @@ void displayLabel::transformCoordinateSys(QPainter *p)
 
 	p->translate(axisGap, img.height() - axisGap);
 	p->scale(1, -1);
+	imgTransform = p->transform();
 // 	p->translate(0 - (qint32)xBegin, 0 - (qint32)yBegin);
 // 	p->scale((qreal)(img.width() - axisGap - (axisGap >> 1)) / (qreal)(xEnd - xBegin), (qreal)(axisGap + (axisGap >> 1) - img.height()) / (yEnd - yBegin));
 }
