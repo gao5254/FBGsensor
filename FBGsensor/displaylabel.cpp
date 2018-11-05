@@ -19,6 +19,7 @@ displayLabel::displayLabel(QWidget *parent)
 
 
 	setAttribute(Qt::WA_OpaquePaintEvent);		//all the area will be painted opaquely
+	setFocusPolicy(Qt::StrongFocus);			//receive keyboard press
 }
 
 displayLabel::~displayLabel()
@@ -110,25 +111,29 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 		iszooming = false;
 		if ((startPoint - endPoint).manhattanLength() > 10)
 		{
-			//transform the rec
-			QRect zoomRect = imgTransform.mapRect(QRect(startPoint, endPoint)).normalized();
-			//constrain the rec
-			if (zoomRect.x() < 0)
-			{
-				zoomRect.setX(0);
-			}
-			if (zoomRect.y() < 0)
-			{
-				zoomRect.setY(0);
-			}
-			if (zoomRect.width() > (this->width() - axisGap - (axisGap >> 1) - zoomRect.x()))
-			{
-				zoomRect.setWidth(this->width() - axisGap - (axisGap >> 1));
-			}
-			if (zoomRect.height() > (this->height() - axisGap - (axisGap >> 1) - zoomRect.y()))
-			{
-				zoomRect.setHeight(this->height() - axisGap - (axisGap >> 1));
-			}
+			//transform the rect
+			QRect zoomRect = imgTransform.inverted().mapRect(QRect(startPoint, endPoint)).normalized();
+			//constrain the rect
+// 			if (zoomRect.x() < 0)
+// 			{
+// 				zoomRect.setX(0);
+// 			}
+// 			if (zoomRect.y() < 0)
+// 			{
+// 				zoomRect.setY(0);
+// 			}
+// 			if (zoomRect.width() > (this->width() - axisGap - (axisGap >> 1) - zoomRect.x()))
+// 			{
+// 				zoomRect.setWidth((this->width() - axisGap - (axisGap >> 1) - zoomRect.x()));
+// 			}
+// 			if (zoomRect.height() > (this->height() - axisGap - (axisGap >> 1) - zoomRect.y()))
+// 			{
+// 				zoomRect.setHeight((this->height() - axisGap - (axisGap >> 1) - zoomRect.y()));
+// 			}
+			zoomRect.setX(qMax(0, zoomRect.x()));
+			zoomRect.setY(qMax(0, zoomRect.y()));
+			zoomRect.setWidth(qMin((this->width() - axisGap - (axisGap >> 1) - zoomRect.x()), zoomRect.width()));
+			zoomRect.setHeight(qMin((this->height() - axisGap - (axisGap >> 1) - zoomRect.y()), zoomRect.height()));
 			//zoom the image
 			double xFactor = (double)(xEnd - xBegin) / (this->width() - axisGap - (axisGap >> 1)),
 				yFactor = (double)(yEnd - yBegin) / (this->height() - axisGap - (axisGap >> 1));
@@ -148,6 +153,27 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 			cursorPos = (temp / wStep) * wStep + xBegin;
 			update(preX - 5, 0, 10, this->height());
 		}
+	}
+}
+
+//process keyboard event
+void displayLabel::keyReleaseEvent(QKeyEvent *event) 
+{
+	switch (event->key())
+	{
+	case Qt::Key_Space:
+	case Qt::Key_Enter:
+	case Qt::Key_Return:
+		xBegin = wStart;
+		xEnd = wEnd;
+		yBegin = 0;
+		yEnd = 4096;
+		rePaintImage();
+		update();
+		break;
+	default:
+		QLabel::keyReleaseEvent(event);
+		break;
 	}
 }
 
@@ -303,9 +329,10 @@ void displayLabel::drawDataLines(QPainter *p)
 		double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), 
 			yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
 		int index = (xBegin - wStart) / wStep;
-		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (xEnd - xBegin); offsetx += wStep, index++)
+		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (xEnd - xBegin); offsetx += wStep)
 		{
 			polygon << QPointF(offsetx * xFactor, (pData[i].at(index) - yBegin) * yFactor);
+			index++;
 		}
 		p->drawPolyline(polygon);
 	}
