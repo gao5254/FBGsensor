@@ -144,7 +144,8 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 		{
 			//set the cursor position
 			int preX = (cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
-			cursorPos = endPoint.x() * (xEnd - xBegin) / (this->width() - axisGap - (axisGap >> 1)) + xBegin;
+			quint32 temp= endPoint.x() * (xEnd - xBegin) / (this->width() - axisGap - (axisGap >> 1)) ;
+			cursorPos = (temp / wStep) * wStep + xBegin;
 			update(preX - 5, 0, 10, this->height());
 		}
 	}
@@ -188,6 +189,11 @@ void displayLabel::paintEvent(QPaintEvent *event)
 		painter.setPen(cursorPen);
 		int xPos = (cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
 		painter.drawLine(xPos, 0, xPos, this->height());
+// 		if (channelInfo)
+// 		{
+// 			painter.drawText(xPos, pData[(cursorPos - wStart) / wStep])
+// 		}
+		painter.setPen(oriPen);
 	}
 
 }
@@ -297,7 +303,7 @@ void displayLabel::drawDataLines(QPainter *p)
 		double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), 
 			yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
 		int index = (xBegin - wStart) / wStep;
-		for (int offsetx = 0; offsetx <= (xEnd - xBegin); offsetx += wStep, index++)
+		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (xEnd - xBegin); offsetx += wStep, index++)
 		{
 			polygon << QPointF(offsetx * xFactor, (pData[i].at(index) - yBegin) * yFactor);
 		}
