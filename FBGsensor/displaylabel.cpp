@@ -114,32 +114,16 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 			//transform the rect
 			QRect zoomRect = imgTransform.inverted().mapRect(QRect(startPoint, endPoint)).normalized();
 			//constrain the rect
-// 			if (zoomRect.x() < 0)
-// 			{
-// 				zoomRect.setX(0);
-// 			}
-// 			if (zoomRect.y() < 0)
-// 			{
-// 				zoomRect.setY(0);
-// 			}
-// 			if (zoomRect.width() > (this->width() - axisGap - (axisGap >> 1) - zoomRect.x()))
-// 			{
-// 				zoomRect.setWidth((this->width() - axisGap - (axisGap >> 1) - zoomRect.x()));
-// 			}
-// 			if (zoomRect.height() > (this->height() - axisGap - (axisGap >> 1) - zoomRect.y()))
-// 			{
-// 				zoomRect.setHeight((this->height() - axisGap - (axisGap >> 1) - zoomRect.y()));
-// 			}
 			zoomRect.setX(qMax(0, zoomRect.x()));
 			zoomRect.setY(qMax(0, zoomRect.y()));
-			zoomRect.setWidth(qMin((this->width() - axisGap - (axisGap >> 1) - zoomRect.x()), zoomRect.width()));
-			zoomRect.setHeight(qMin((this->height() - axisGap - (axisGap >> 1) - zoomRect.y()), zoomRect.height()));
+// 			zoomRect.setWidth(qMin((this->width() - axisGap - (axisGap >> 1) - zoomRect.x()), zoomRect.width()));
+// 			zoomRect.setHeight(qMin((this->height() - axisGap - (axisGap >> 1) - zoomRect.y()), zoomRect.height()));
 			//zoom the image
 			double xFactor = (double)(xEnd - xBegin) / (this->width() - axisGap - (axisGap >> 1)),
 				yFactor = (double)(yEnd - yBegin) / (this->height() - axisGap - (axisGap >> 1));
-			xEnd = (zoomRect.x() + zoomRect.width()) * xFactor + xBegin;
+			xEnd = qMin((quint32)((zoomRect.x() + zoomRect.width()) * xFactor + xBegin), xEnd);
 			xBegin = zoomRect.x() * xFactor + xBegin;
-			yEnd = (zoomRect.y() + zoomRect.height()) * yFactor + yBegin;
+			yEnd = qMin((quint32)((zoomRect.y() + zoomRect.height()) * yFactor + yBegin), yEnd);
 			yBegin = zoomRect.y() * yFactor + yBegin;
 			// repaint the img
 			rePaintImage();
@@ -148,10 +132,13 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 		else
 		{
 			//set the cursor position
-			int preX = (cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
+// 			qint32 preX = (qint32)(cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
+// 			imgTransform.map(preX, 0, &preX, nullptr);
+			endPoint = imgTransform.inverted().map(endPoint);
 			quint32 temp= endPoint.x() * (xEnd - xBegin) / (this->width() - axisGap - (axisGap >> 1)) ;
-			cursorPos = (temp / wStep) * wStep + xBegin;
-			update(preX - 5, 0, 10, this->height());
+			cursorPos = ((temp + xBegin -wStart) / wStep) * wStep + wStart;
+// 			update(preX - 5, 0, 10, this->height());
+			update();
 		}
 	}
 }
@@ -197,7 +184,7 @@ void displayLabel::paintEvent(QPaintEvent *event)
 	painter.drawImage(dRect, img, dRect);
 
 	//draw the zooming rectangle
-	if (iszooming && ((startPoint - endPoint).manhattanLength() >11))
+	if (iszooming && ((startPoint - endPoint).manhattanLength() >10))
 	{
 		QPen recPen;
 		recPen.setStyle(Qt::DashLine);
@@ -214,11 +201,24 @@ void displayLabel::paintEvent(QPaintEvent *event)
 		cursorPen.setWidth(2);
 		painter.setPen(cursorPen);
 		int xPos = (cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
-		painter.drawLine(xPos, 0, xPos, this->height());
-// 		if (channelInfo)
-// 		{
-// 			painter.drawText(xPos, pData[(cursorPos - wStart) / wStep])
-// 		}
+		for (int i = 0; i < chNum;i++)
+		{
+			if (channelInfo[i].checked)
+			{
+				quint16 yData = pData[i].at((cursorPos - wStart) / wStep);
+				if (yData > yBegin && yData < yEnd)
+				{
+					quint32 yPos = (yData - yBegin) * (this->height() - axisGap - (axisGap >> 1)) / (yEnd - yBegin);
+					QPoint pnt(xPos, yPos);
+					pnt = imgTransform.map(pnt);
+					painter.drawText(pnt, QString::number(cursorPos) + ',' + QString::number(yData));
+				}
+			}
+		}
+		int xNewPos = xPos, yPos = 0;
+		imgTransform.map(xPos, 0, &xNewPos, &yPos);
+		painter.drawLine(xNewPos, 0, xNewPos, this->height());
+
 		painter.setPen(oriPen);
 	}
 
@@ -280,7 +280,7 @@ void displayLabel::drawCoordinateSys(QPainter *p)
 	for (int offsety = 0; offsety < (yEnd - yBegin); offsety += yinter)
 	{
 		//draw y axis number 
-		p->drawText(-35, -offsety * yFactor + 5, QString::number(yBegin +offsety));
+		p->drawText(-35, -offsety * yFactor - 2, QString::number(yBegin +offsety));
 	}
 // 	p->drawText(-40, -((int)yEnd - (int)yBegin) * yFactor + 5, QString::number(yEnd));
 // 	p->drawText((xEnd - xBegin) * xFactor - 20, 10, QString::number(xEnd));
@@ -329,7 +329,7 @@ void displayLabel::drawDataLines(QPainter *p)
 		double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), 
 			yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
 		int index = (xBegin - wStart) / wStep;
-		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (xEnd - xBegin); offsetx += wStep)
+		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (int)(xEnd - xBegin); offsetx += wStep)
 		{
 			polygon << QPointF(offsetx * xFactor, (pData[i].at(index) - yBegin) * yFactor);
 			index++;
