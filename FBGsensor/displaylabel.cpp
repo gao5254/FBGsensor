@@ -143,7 +143,27 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 	}
 }
 
-//process keyboard event
+//process keyboard press event
+void displayLabel::keyPressEvent(QKeyEvent *event) 
+{
+	switch (event->key())
+	{
+	case Qt::Key_Left:
+		cursorPos -= wStep;
+		update();
+		break;
+	case Qt::Key_Right:
+		cursorPos += wStep;
+		update();
+		break;
+	default:
+		QLabel::keyReleaseEvent(event);
+		break;
+	}
+
+}
+
+//process space and enter keyboard event
 void displayLabel::keyReleaseEvent(QKeyEvent *event) 
 {
 	switch (event->key())
@@ -158,6 +178,8 @@ void displayLabel::keyReleaseEvent(QKeyEvent *event)
 		rePaintImage();
 		update();
 		break;
+	case Qt::Key_PageDown:
+		cursorPos += 
 	default:
 		QLabel::keyReleaseEvent(event);
 		break;
@@ -184,7 +206,7 @@ void displayLabel::paintEvent(QPaintEvent *event)
 	painter.drawImage(dRect, img, dRect);
 
 	//draw the zooming rectangle
-	if (iszooming && ((startPoint - endPoint).manhattanLength() >10))
+	if (iszooming && ((startPoint - endPoint).manhattanLength() >11))
 	{
 		QPen recPen;
 		recPen.setStyle(Qt::DashLine);
@@ -198,8 +220,14 @@ void displayLabel::paintEvent(QPaintEvent *event)
 	if (cursorPos > xBegin && cursorPos < xEnd)
 	{
 		QPen cursorPen;
-		cursorPen.setWidth(2);
+		cursorPen.setWidth(1);
 		painter.setPen(cursorPen);
+		QFont oriFont = painter.font();
+		QFont numFont(oriFont);
+		numFont.setPointSize(9);
+		numFont.setFamily(QString::fromLocal8Bit("Î¢ÈíÑÅºÚ,ºÚÌå"));
+		painter.setFont(numFont);
+
 		int xPos = (cursorPos - xBegin) * (this->width() - axisGap - (axisGap >> 1)) / (xEnd - xBegin);
 		for (int i = 0; i < chNum;i++)
 		{
@@ -211,15 +239,16 @@ void displayLabel::paintEvent(QPaintEvent *event)
 					quint32 yPos = (yData - yBegin) * (this->height() - axisGap - (axisGap >> 1)) / (yEnd - yBegin);
 					QPoint pnt(xPos, yPos);
 					pnt = imgTransform.map(pnt);
-					painter.drawText(pnt, QString::number(cursorPos) + ',' + QString::number(yData));
+					painter.drawText(pnt + QPoint(5, -5), QString("CH%1:(%2,%3)").arg(i + 1).arg(cursorPos).arg(yData));
 				}
 			}
 		}
-		int xNewPos = xPos, yPos = 0;
-		imgTransform.map(xPos, 0, &xNewPos, &yPos);
-		painter.drawLine(xNewPos, 0, xNewPos, this->height());
+		painter.setTransform(imgTransform);
+		painter.drawLine(xPos, 0, xPos, (this->height() - axisGap - (axisGap >> 1)));
+		painter.resetTransform();
 
 		painter.setPen(oriPen);
+		painter.setFont(oriFont);
 	}
 
 }

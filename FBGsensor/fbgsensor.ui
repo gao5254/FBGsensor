@@ -22,7 +22,14 @@
         <property name="title">
          <string/>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="6,1,1,1,1">
+        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,6,1,1,1,1">
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;拖动区域-&amp;gt;放大图像 空格或回车-&amp;gt;复原图像&lt;/p&gt;&lt;p&gt;单击-&amp;gt;显示数值光标 左右方向键-&amp;gt;移动数值光标&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
