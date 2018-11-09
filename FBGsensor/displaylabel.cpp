@@ -144,26 +144,18 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 }
 
 //process keyboard press event
-void displayLabel::keyPressEvent(QKeyEvent *event) 
-{
-	switch (event->key())
-	{
-	case Qt::Key_Left:
-		cursorPos -= wStep;
-		update();
-		break;
-	case Qt::Key_Right:
-		cursorPos += wStep;
-		update();
-		break;
-	default:
-		QLabel::keyReleaseEvent(event);
-		break;
-	}
+// void displayLabel::keyPressEvent(QKeyEvent *event) 
+// {
+// 	switch (event->key())
+// 	{
+// 	default:
+// 		QLabel::keyReleaseEvent(event);
+// 		break;
+// 	}
+// 
+// }
 
-}
-
-//process space and enter keyboard event
+//process space and enter to reset, and left/right/PageUp/PageDown to move cursor
 void displayLabel::keyReleaseEvent(QKeyEvent *event) 
 {
 	switch (event->key())
@@ -178,8 +170,33 @@ void displayLabel::keyReleaseEvent(QKeyEvent *event)
 		rePaintImage();
 		update();
 		break;
+	case Qt::Key_Left:
+		if (cursorPos >= xBegin && cursorPos <= xEnd)
+		{
+			cursorPos -= wStep;
+		}
+		update();
+		break;
+	case Qt::Key_Right:
+		if (cursorPos >= xBegin && cursorPos <= xEnd)
+		{
+			cursorPos += wStep;
+		}
+		update();
+		break;
 	case Qt::Key_PageDown:
-		cursorPos += 
+		if (cursorPos >= xBegin && cursorPos <= xEnd)
+		{
+			cursorPos += wStep << 4;
+		}
+		update();
+		break;
+	case Qt::Key_PageUp:
+		if (cursorPos >= xBegin && cursorPos <= xEnd)
+		{
+			cursorPos -= wStep << 4;
+		}
+		update();
 	default:
 		QLabel::keyReleaseEvent(event);
 		break;
