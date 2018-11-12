@@ -28,12 +28,12 @@ displayLabel::~displayLabel()
 }
 
 // set parameter into this class, keep same with main window
-void displayLabel::setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 n, QVector<quint16> *p)
+void displayLabel::setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 chnln, QVector<quint16> *p)
 {
 	wStart = Sta;
 	wEnd = En;
 	wStep = Ste;
-	n = chNum;
+	chnln = chNum;
 	pData = p;
 
 	xBegin = wStart, xEnd = wEnd, yBegin = 0, yEnd = 4096;
@@ -50,6 +50,13 @@ void displayLabel::setChnnelInfo(int index, bool b, QColor c /*= QColor::Invalid
 	{
 		channelInfo[index].lineColor = c;
 	}
+	rePaintImage();
+	update();
+}
+
+void displayLabel::setAttachment(bool chk)
+{
+	isAttaching = chk;
 	rePaintImage();
 	update();
 }
@@ -73,6 +80,7 @@ void displayLabel::rePaintImage()
 	drawCoordinateSys(&painter);
 
 	//paint lines on img
+	painter.setClipRect(QRect(0, 0, xEnd - xBegin, yEnd - yBegin));
 	drawDataLines(&painter);
 }
 
@@ -163,6 +171,7 @@ void displayLabel::keyReleaseEvent(QKeyEvent *event)
 	case Qt::Key_Space:
 	case Qt::Key_Enter:
 	case Qt::Key_Return:
+	case Qt::Key_Escape:
 		xBegin = wStart;
 		xEnd = wEnd;
 		yBegin = 0;
@@ -370,17 +379,26 @@ void displayLabel::drawDataLines(QPainter *p)
 			continue;
 		}
 		QPen linePen(channelInfo[i].lineColor, 2);
-		p->setPen(linePen);
 		QPolygonF polygon;
 		double xFactor = (img.width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin), 
 			yFactor = (img.height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
 		int index = (xBegin - wStart) / wStep;
 		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (int)(xEnd - xBegin); offsetx += wStep)
 		{
-			polygon << QPointF(offsetx * xFactor, (pData[i].at(index) - yBegin) * yFactor);
+			polygon << QPointF(offsetx * xFactor, ((qint32)pData[i].at(index) - (qint32)yBegin) * yFactor);
 			index++;
 		}
-		p->drawPolyline(polygon);
+		if (isAttaching)
+		{
+			p->setPen(linePen);
+			p->drawPolyline(polygon);
+		} 
+		else
+		{
+			linePen.setWidth(3);
+			p->setPen(linePen);
+			p->drawPoints(polygon);
+		}
 	}
 	p->setPen(oriPen);
 }

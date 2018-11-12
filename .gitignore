@@ -18,6 +18,7 @@ bld/
 
 # edited by gaoxu
 GeneratedFiles/
+testData.csv
 
 
 # Roslyn cache directories

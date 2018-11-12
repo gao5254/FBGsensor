@@ -3,6 +3,7 @@
 #include <QTimer>
 #include <QDebug>
 #include <QColorDialog>
+#include <QFileDialog>
 #include <QStandardPaths>
 #include <QDateTime>
 #include <QFile>
@@ -24,7 +25,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
 	}
 
-	//data for test
+	//show test data
 	spectrumData[0].fill(2048);
 	spectrumData[1].fill(3052);
 	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
@@ -33,8 +34,8 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 
 	//init statusbar
-	statusLabel = new QLabel();
-	ui.statusBar->addWidget(statusLabel);
+// 	statusLabel = new QLabel();
+// 	ui.statusBar->addWidget(statusLabel);
 
 	//init combobox
 // 	ui.channelCBBox->addItem(QString::fromLocal8Bit("全部"));
@@ -65,10 +66,14 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 // 	ui.scanTab->setEnabled(false);
 	ui.continuousCheck->setEnabled(false);
+	ui.saveSpectrumCheck->setEnabled(false);
 	ui.scanBtn->setEnabled(false);
 
 	//connnect
 	connect(serialPManager, &SerialPortManager::msgReceived, this, &FBGsensor::msgProcess);
+
+	//max the window
+// 	setWindowState(Qt::WindowMaximized);
 }
 
 FBGsensor::~FBGsensor()
@@ -76,6 +81,7 @@ FBGsensor::~FBGsensor()
 	delete[] spectrumData;
 	if (csvfile != nullptr)
 	{
+		csvfile->close();
 		delete csvfile;
 	}
 }
@@ -112,6 +118,7 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 	{
 		//close the serialport
 		serialPManager->closeDevice();
+
 		//disable other btn and edit
 		ui.setParaBtn->setEnabled(false);
 		ui.wavEndEdit->setEnabled(false);
@@ -119,6 +126,7 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 		ui.wavStepEdit->setEnabled(false);
 // 		ui.scanTab->setEnabled(false);
 		ui.continuousCheck->setEnabled(false);
+		ui.saveSpectrumCheck->setEnabled(false);
 		ui.scanBtn->setEnabled(false);
 
 		//change text on this btn
@@ -155,12 +163,51 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 {
 	if (chk)
 	{
+		//disable check boxes
 		ui.continuousCheck->setEnabled(false);
+		ui.saveSpectrumCheck->setEnabled(false);
+
+		//extra action when checked
+		if (ui.saveSpectrumCheck->isChecked())
+		{
+			//choose a dir to save file
+			QString fileName = QFileDialog::getSaveFileName(this, 
+				QString::fromLocal8Bit("请选择光谱数据保存位置"), 
+				QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + '/' + QDateTime::currentDateTime().toString("yyyyMMdd-HHmm") + ".csv", 
+				"csv Files (*.csv)");
+			if (!fileName.isEmpty())
+			{
+				//if the file is choosen
+				if (csvfile != nullptr)
+				{
+					delete csvfile;
+				}
+				csvfile = new QFile(fileName, this);
+				if (csvfile->open(QFile::WriteOnly | QFile::Text))
+				{
+					QTextStream data(csvfile);
+					data << waveStart << ',' << waveEnd << ',' << waveStep << endl;
+				}
+			}
+			else
+			{
+				//if no file is choosen
+				delete csvfile;
+				csvfile = nullptr;
+			}
+		} 
+		else
+		{
+			//delete the pointer so that no files will be written
+			delete csvfile;
+			csvfile = nullptr;
+		}
+
 		if (ui.continuousCheck->isChecked())
 		{
 			//continuously scan
 			ui.scanBtn->setText(QString::fromLocal8Bit("停止扫描"));
-		} 
+		}
 		else
 		{
 			//discontinuously scan
@@ -195,7 +242,16 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 		scanStarted = false;
 		currentChannel = 0;
 		ui.scanBtn->setText(QString::fromLocal8Bit("开始扫描"));
+
+		if (csvfile != nullptr && csvfile->isOpen())
+		{
+			csvfile->close();
+			delete csvfile;
+			csvfile = nullptr;
+		}
+		//enable check boxes
 		ui.continuousCheck->setEnabled(true);
+		ui.saveSpectrumCheck->setEnabled(true);
 	}
 }
 
@@ -236,6 +292,12 @@ void FBGsensor::on_chnl2ChkBox_toggled(bool checked)
 {
 	ui.showLabel->setChnnelInfo(1, ui.chnl2ChkBox->isChecked());
 
+}
+
+
+void FBGsensor::on_autoAttachCheck_toggled(bool checked)
+{
+	ui.showLabel->setAttachment(ui.autoAttachCheck->isChecked());
 }
 
 //pass the index to label, and update it
@@ -308,6 +370,7 @@ void FBGsensor::showDeviceInfo(QByteArray msg)
 		ui.wavStepEdit->setEnabled(true);
 // 		ui.scanTab->setEnabled(true);
 		ui.continuousCheck->setEnabled(true);
+		ui.saveSpectrumCheck->setEnabled(true);
 		ui.scanBtn->setEnabled(true);
 
 		//change the text
@@ -345,19 +408,19 @@ void FBGsensor::spectrumSample()
 
 
 		//write in the file
-// 		if (csvfile->exists())
-// 		{
-// 			QTextStream data(csvfile);
-// 			for (int i = 0; i < channelNum; i++)
-// 			{
-// 				data << i <<','<< spectrumData[i].size();
-// 				for each (quint16 ad in spectrumData[i])
-// 				{
-// 					data << ',' << ad;
-// 				}
-// 				data << endl;
-// 			}
-// 		}
+		if (csvfile != nullptr && csvfile->isOpen())
+		{
+			QTextStream data(csvfile);
+			for (int i = 0; i < channelNum; i++)
+			{
+				data << i <<','<< spectrumData[i].size();
+				for each (quint16 ad in spectrumData[i])
+				{
+					data << ',' << ad;
+				}
+				data << endl;
+			}
+		}
 		//delete later
 
 		//check if continuously
@@ -371,6 +434,7 @@ void FBGsensor::spectrumSample()
 		} 
 		else
 		{
+			ui.statusBar->showMessage(QString::fromLocal8Bit("单次扫描完成"), 5000);
 			ui.scanBtn->setChecked(false);
 		}
 	}

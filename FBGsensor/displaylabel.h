@@ -11,8 +11,9 @@ class displayLabel : public QLabel
 public:
 	displayLabel(QWidget *parent = Q_NULLPTR);
 	~displayLabel();
-	void setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 n, QVector<quint16> *p);
+	void setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 chnln, QVector<quint16> *p);
 	void setChnnelInfo(int index, bool b, QColor c = QColor::Invalid);
+	void setAttachment(bool chk);
 	void rePaintImage();
 
 private:
@@ -21,7 +22,7 @@ private:
 	quint32 xBegin = 1527000, xEnd = 1568000, yBegin = 0, yEnd = 4096;
 	quint32 cursorPos = 0;
 	int axisGap = 50;		//the gap between the axis and the border line
-	bool iszooming;			//the flag when the mouse pressed down
+	bool iszooming = false, isAttaching = true;			//the flag when the mouse pressed down, the flag whether to attach line
 	QVector<quint16> *pData = nullptr;
 	QImage img;
 	QPoint startPoint, endPoint;

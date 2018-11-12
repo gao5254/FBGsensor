@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>858</width>
-    <height>643</height>
+    <width>924</width>
+    <height>679</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,11 +22,43 @@
         <property name="title">
          <string/>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,6,1,1,1,1">
+        <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,6,1,1,1,1,1">
+         <item>
+          <widget class="QCheckBox" name="autoAttachCheck">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>自动连线</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item>
           <widget class="QLabel" name="label_5">
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;拖动区域-&amp;gt;放大图像 空格或回车-&amp;gt;复原图像&lt;/p&gt;&lt;p&gt;单击-&amp;gt;显示数值光标 左右方向键-&amp;gt;移动数值光标&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;拖动区域-&amp;gt;放大图像 空格/回车-&amp;gt;复原图像&lt;/p&gt;&lt;p&gt;单击-&amp;gt;在此处显示数值光标 左/右/上页/下页-&amp;gt;移动数值光标&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -289,7 +321,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>858</width>
+     <width>924</width>
      <height>23</height>
     </rect>
    </property>
