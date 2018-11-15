@@ -33,7 +33,7 @@ void displayLabel::setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 chnln, 
 	wStart = Sta;
 	wEnd = En;
 	wStep = Ste;
-	chnln = chNum;
+	chNum = chnln;
 	pData = p;
 
 	xBegin = wStart, xEnd = wEnd, yBegin = 0, yEnd = 4096;

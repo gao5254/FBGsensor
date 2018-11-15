@@ -7,6 +7,7 @@
 //pre-declaration
 class SerialPortManager;
 class QFile;
+class DataProcess;
 
 class FBGsensor : public QMainWindow
 {
@@ -34,7 +35,8 @@ private:
 	QString portNumber = "COM3";		//存储端口号
 	quint32 waveStart = 1527000, waveEnd = 1568000, waveStep = 20, channelNum = 2;		//存储扫描波长起始值，终止值，间隔，单位为pm，通道数
 	quint8 currentChannel = 0;		//the currently sampled channel, should be reset on every scan
-	SerialPortManager *serialPManager;		//串口管理及通信
+	SerialPortManager *serialPManager = nullptr;		//串口管理及通信
+	DataProcess *dtProcesser = nullptr;		//to process the data
 // 	QLabel *statusLabel = nullptr;		//label showing msg in the statusbar
 	QTimer *sendMsgTimer = nullptr;		//timer to send msg repeatly when there's no reply
 	QVector<quint16> *spectrumData = nullptr;	//a pointer to the data

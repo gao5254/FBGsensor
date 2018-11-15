@@ -9,6 +9,7 @@
 #include <QFile>
 #include "serialportmanager.h"
 #include "doublevalidator.h"
+#include "dataprocess.h"
 
 FBGsensor::FBGsensor(QWidget *parent)
 	: QMainWindow(parent)
@@ -18,7 +19,9 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 	//initialize member
 	serialPManager = new SerialPortManager((QObject*)this);
-	sendMsgTimer = new QTimer(this) ;
+	sendMsgTimer = new QTimer(this);
+	dtProcesser = new DataProcess((QObject*)this);
+	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 	spectrumData = new QVector<quint16> [channelNum];
 	for (int i = 0; i < channelNum; i++)
 	{
@@ -355,8 +358,11 @@ void FBGsensor::showDeviceInfo(QByteArray msg)
 	{
 		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
 	}
+
 	//set label para
 	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
+	//set processer para
+	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 	//show in UI
 	ui.wavStartEdit->setText(QString::number(waveStart).insert(4, '.'));
 	ui.wavEndEdit->setText(QString::number(waveEnd).insert(4, '.'));
