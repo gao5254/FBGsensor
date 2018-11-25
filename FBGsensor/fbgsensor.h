@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
-#include <QTime>
 #include "ui_fbgsensor.h"
 
 //pre-declaration
@@ -38,11 +37,11 @@ private:
 	quint8 currentChannel = 0;		//the currently sampled channel, should be reset on every scan
 	SerialPortManager *serialPManager = nullptr;		//串口管理及通信
 	DataProcess *dtProcesser = nullptr;		//to process the data
-// 	QLabel *statusLabel = nullptr;		//label showing msg in the statusbar
+	QLabel *statusLabel = nullptr;		//label showing msg in the statusbar
 	QTimer *sendMsgTimer = nullptr;		//timer to send msg repeatly when there's no reply
 	QVector<quint16> *spectrumData = nullptr;	//a pointer to the data
 	QFile *csvfile = nullptr;
-	QTime t;
+	QTime *curTime;
 	PeakInfoModel  *peakInfoModel = nullptr;
 
 	bool firstSetInfo=true;			//if first set info, change the status of edit and btn

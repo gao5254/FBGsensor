@@ -7,6 +7,7 @@
 #include <QStandardPaths>
 #include <QDateTime>
 #include <QFile>
+#include <QTime>
 #include "peakinfomodel.h"
 #include "serialportmanager.h"
 #include "doublevalidator.h"
@@ -19,6 +20,8 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 
 	//initialize member
+	curTime = new QTime();
+
 	serialPManager = new SerialPortManager((QObject*)this);
 
 	sendMsgTimer = new QTimer(this);
@@ -56,8 +59,8 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 
 	//init statusbar
-// 	statusLabel = new QLabel();
-// 	ui.statusBar->addWidget(statusLabel);
+	statusLabel = new QLabel();
+	ui.statusBar->addWidget(statusLabel);
 
 	//init combobox
 // 	ui.channelCBBox->addItem(QString::fromLocal8Bit("全部"));
@@ -100,6 +103,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 FBGsensor::~FBGsensor()
 {
+	delete curTime;
 	delete[] spectrumData;
 	if (csvfile != nullptr)
 	{
@@ -229,6 +233,7 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 		{
 			//continuously scan
 			ui.scanBtn->setText(QString::fromLocal8Bit("停止扫描"));
+			curTime->restart();
 		}
 		else
 		{
@@ -264,6 +269,7 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 		scanStarted = false;
 		currentChannel = 0;
 		ui.scanBtn->setText(QString::fromLocal8Bit("开始扫描"));
+		statusLabel->setText("");
 
 		if (csvfile != nullptr && csvfile->isOpen())
 		{
@@ -424,14 +430,14 @@ void FBGsensor::spectrumSample()
 
 	if (currentChannel >= (quint8)channelNum)
 	{
-		//repaint tht label
+		//repaint the label
 		ui.showLabel->rePaintImage();
 		ui.showLabel->update();
 		currentChannel = 0;
 
 		//analyze the data
-		peakInfoModel->setnum(0, 0, dtProcesser->getPeakWav(1545000, 1555000, 0));
-		peakInfoModel->setnum(1, 0, dtProcesser->getPeakWav(1545000, 1555000, 1));
+		peakInfoModel->setnum(0, dtProcesser->getPeakWav(1545000, 1555000, 0), 
+			dtProcesser->getPeakWav(1545000, 1555000, 1));
 
 		//write in the file
 		if (csvfile != nullptr && csvfile->isOpen())
@@ -453,6 +459,9 @@ void FBGsensor::spectrumSample()
 		//check if continuously
 		if (ui.continuousCheck->isChecked())
 		{
+			//show the time
+			statusLabel->setText(QString::fromLocal8Bit("连续采集计时（s）：") + QString::number(curTime->elapsed() / 1000));
+
 			sendMsgTimer->disconnect();
 			connect(sendMsgTimer, &QTimer::timeout, serialPManager, &SerialPortManager::scanOnce);
 			serialPManager->scanOnce();

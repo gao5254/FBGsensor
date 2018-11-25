@@ -13,10 +13,11 @@ PeakInfoModel::~PeakInfoModel()
 }
 
 //set the number to the tabel 
-void PeakInfoModel::setnum(int chnl, int inx, double num)
+void PeakInfoModel::setnum(int col, double num1, double num2)
 {
 	beginResetModel();
-	peakTable[chnl][inx] = num;
+	peakTable[0][col] = num1;
+	peakTable[1][col] = num2;
 	endResetModel();
 }
 
@@ -34,7 +35,7 @@ QVariant PeakInfoModel::data(const QModelIndex &index, int role /*= Qt::DisplayR
 {
 	if (!index.isValid() || role != Qt::DisplayRole)
 		return QVariant();
-	return QString::number(peakTable[index.row()].at(index.column()), 'f', 1);
+	return QString::number(peakTable[index.row()].at(index.column()), 'f', 3);
 }
 
 QVariant PeakInfoModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const 

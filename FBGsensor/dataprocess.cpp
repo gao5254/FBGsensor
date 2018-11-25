@@ -92,7 +92,7 @@ double DataProcess::findPeak_Centroid(PeakInfo info, quint32 chl) const
 	for (int i = 0; i < mainPart.size(); i++)
 	{
 		sumxy += i * mainPart.at(i);
-		sumy += i;
+		sumy += mainPart.at(i);
 	}
 	return (double)sumxy / sumy;
 }

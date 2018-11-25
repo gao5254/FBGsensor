@@ -11,7 +11,7 @@ class PeakInfoModel : public QAbstractTableModel
 public:
 	PeakInfoModel(QObject *parent = nullptr);
 	~PeakInfoModel();
-	void setnum(int chnl, int inx, double num);
+	void setnum(int col, double num1, double num2);
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
