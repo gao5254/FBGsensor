@@ -8,6 +8,7 @@
 class SerialPortManager;
 class QFile;
 class DataProcess;
+class PeakInfoModel;
 
 class FBGsensor : public QMainWindow
 {
@@ -42,6 +43,7 @@ private:
 	QVector<quint16> *spectrumData = nullptr;	//a pointer to the data
 	QFile *csvfile = nullptr;
 	QTime t;
+	PeakInfoModel  *peakInfoModel = nullptr;
 
 	bool firstSetInfo=true;			//if first set info, change the status of edit and btn
 // 	bool scanContinuously = false;		//if the scanning is continuously, resend msg after receiving msg

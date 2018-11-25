@@ -48,6 +48,9 @@
     <ClCompile Include="dataprocess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="peakinfomodel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="fbgsensor.h">
@@ -63,6 +66,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="dataprocess.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="peakinfomodel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

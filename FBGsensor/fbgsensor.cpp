@@ -7,6 +7,7 @@
 #include <QStandardPaths>
 #include <QDateTime>
 #include <QFile>
+#include "peakinfomodel.h"
 #include "serialportmanager.h"
 #include "doublevalidator.h"
 #include "dataprocess.h"
@@ -19,9 +20,27 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 	//initialize member
 	serialPManager = new SerialPortManager((QObject*)this);
+
 	sendMsgTimer = new QTimer(this);
+
 	dtProcesser = new DataProcess((QObject*)this);
 	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
+
+// 	peakInfoModel = new PeakInfoModel(2, 2, this);
+// 	QStandardItem *item = new QStandardItem("none");
+// 	peakInfoModel->setItem(0, 0, item);
+// 	peakInfoModel->setItem(0, 1, item->clone());
+// 	peakInfoModel->setItem(1, 0, item->clone());
+// 	peakInfoModel->setItem(1, 1, item->clone());
+// 	peakInfoModel->setHorizontalHeaderLabels(QStringList() << "peak 1" << "peak 2");
+// 	peakInfoModel->setVerticalHeaderLabels(QStringList() << "channel 1" << "channel 2");
+// 	ui.peakInfoView->setModel(peakInfoModel);
+// 	ui.peakInfoView->resizeRowsToContents();
+// 	qDebug() << ui.peakInfoView->rowHeight(0);
+
+	peakInfoModel = new PeakInfoModel(this);
+	ui.peakInfoView->setModel(peakInfoModel);
+
 	spectrumData = new QVector<quint16> [channelNum];
 	for (int i = 0; i < channelNum; i++)
 	{
@@ -410,16 +429,18 @@ void FBGsensor::spectrumSample()
 		ui.showLabel->update();
 		currentChannel = 0;
 
-		//TODO: analyze the data
-
+		//analyze the data
+		peakInfoModel->setnum(0, 0, dtProcesser->getPeakWav(1545000, 1555000, 0));
+		peakInfoModel->setnum(1, 0, dtProcesser->getPeakWav(1545000, 1555000, 1));
 
 		//write in the file
 		if (csvfile != nullptr && csvfile->isOpen())
 		{
 			QTextStream data(csvfile);
+			QString curTime = QTime::currentTime().toString("HHmmss");
 			for (int i = 0; i < channelNum; i++)
 			{
-				data << i <<','<< spectrumData[i].size();
+				data << curTime <<','<< i;
 				for each (quint16 ad in spectrumData[i])
 				{
 					data << ',' << ad;
@@ -427,7 +448,7 @@ void FBGsensor::spectrumSample()
 				data << endl;
 			}
 		}
-		//delete later
+		
 
 		//check if continuously
 		if (ui.continuousCheck->isChecked())

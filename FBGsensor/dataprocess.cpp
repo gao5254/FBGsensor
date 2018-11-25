@@ -22,11 +22,22 @@ void DataProcess::setPara(quint32 Sta, quint32 En, quint32 Ste, quint32 chnln, c
 }
 
 //get the wave peak in the range (rangeStart, rangeEnd), and return the wave
-quint32 DataProcess::getPeakWav(quint32 rangeStart, quint32 rangeEnd, quint32 chl) const
+double DataProcess::getPeakWav(quint32 rangeStart, quint32 rangeEnd, quint32 chl) const
 {
+	Q_ASSERT(rangeStart < rangeEnd);
+	Q_ASSERT(rangeStart >= wStart);
+	Q_ASSERT(rangeEnd <= wEnd);
+
 	quint32 begeinPos = (rangeStart - wStart) / wStep,
 		endPos = (rangeEnd - wStart) / wStep;
 	PeakInfo peakInfo = getMainPart(begeinPos, endPos, chl);
+	if (peakInfo.length == 0 && peakInfo.pos == 0)
+	{
+		//no peak, return 0
+		return 0;
+	}
+	double peakPos = findPeak_Centroid(peakInfo, chl);
+	return (peakPos + peakInfo.pos) * wStep + wStart;
 }
 
 //get the main part from the range (beginPos, endPos) in the chl-th spectrum
@@ -39,6 +50,7 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	quint64 total = 0;
 	quint32 maxpos = beginPos;
 	quint16 peak = pData[chl].at(beginPos);
+	//find the max position and sum all the points
 	for (int i = beginPos; i <= endPos; i++)
 	{
 		total += pData[chl].at(i);
@@ -49,12 +61,19 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 		}
 	}
 	quint32 num = endPos - beginPos + 1;
+	//subtract some large points from the total sum
 	for (int i = qMax(maxpos - 5, beginPos); i < qMin(maxpos + 5, endPos); i++)
 	{
 		total -= pData[chl].at(i);
 		num--;
 	}
 	quint16 base = total / num, thr = (quint16)((peak - base) * 0.3) + base;
+	//if peak is too close to the base, then there is no peak
+	if ((peak - base) < 400)
+	{
+		return PeakInfo{ 0, 0 };
+	}
+
 	quint32 pos = maxpos;
 	for (pos = maxpos; pData[chl].at(pos) >= thr; pos--)
 	{
@@ -64,4 +83,16 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	{
 	}
 	return PeakInfo{ pos, length };
+}
+
+double DataProcess::findPeak_Centroid(PeakInfo info, quint32 chl) const
+{
+	QVector<quint16> mainPart = pData[chl].mid(info.pos, info.length);
+	quint64 sumxy = 0, sumy = 0;
+	for (int i = 0; i < mainPart.size(); i++)
+	{
+		sumxy += i * mainPart.at(i);
+		sumy += i;
+	}
+	return (double)sumxy / sumy;
 }
