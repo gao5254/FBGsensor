@@ -80,7 +80,10 @@ void displayLabel::rePaintImage()
 	drawCoordinateSys(&painter);
 
 	//paint lines on img
-	painter.setClipRect(QRect(0, 0, xEnd - xBegin, yEnd - yBegin));
+	double xFactor = (this->width() - axisGap - (axisGap >> 1)) / (double)(xEnd - xBegin),
+		yFactor = (this->height() - axisGap - (axisGap >> 1)) / (double)(yEnd - yBegin);
+
+	painter.setClipRect(QRect(0, 0, (xEnd - xBegin) * xFactor, (yEnd - yBegin) * yFactor));
 	drawDataLines(&painter);
 }
 
@@ -386,6 +389,10 @@ void displayLabel::drawDataLines(QPainter *p)
 		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (int)(xEnd - xBegin); offsetx += wStep)
 		{
 			polygon << QPointF(offsetx * xFactor, ((qint32)pData[i].at(index) - (qint32)yBegin) * yFactor);
+			if (xEnd - xBegin < 1000)
+			{
+				qDebug() << offsetx;
+			}
 			index++;
 		}
 		if (isAttaching)
