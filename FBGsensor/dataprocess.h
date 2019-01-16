@@ -11,6 +11,7 @@ class DataProcess : public QObject
 	{
 		quint32 pos;
 		quint32 length;
+		quint16 threshold;
 	};
 
 

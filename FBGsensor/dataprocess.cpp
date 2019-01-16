@@ -62,12 +62,13 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	}
 	quint32 num = endPos - beginPos + 1;
 	//subtract some large points from the total sum
-	for (int i = qMax(maxpos - 5, beginPos); i < qMin(maxpos + 5, endPos); i++)
+	for (int i = qMax(maxpos - 10, beginPos); i < qMin(maxpos + 10, endPos); i++)
 	{
 		total -= pData[chl].at(i);
 		num--;
 	}
-	quint16 base = total / num, thr = (quint16)((peak - base) * 0.3) + base;
+	double ratio = 0.3;
+	quint16 base = total / num, thr = (quint16)((peak - base) * ratio) + base;
 	//if peak is too close to the base, then there is no peak
 	if ((peak - base) < 400)
 	{
@@ -82,16 +83,17 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	for (length; pData[chl].at(pos + length - 1) > thr; length ++)
 	{
 	}
-	return PeakInfo{ pos, length };
+	return PeakInfo{ pos, length, thr};
 }
 
+// using center of gravity (minus threshold)
 double DataProcess::findPeak_Centroid(PeakInfo info, quint32 chl) const
 {
 	QVector<quint16> mainPart = pData[chl].mid(info.pos, info.length);
 	quint64 sumxy = 0, sumy = 0;
 	for (int i = 0; i < mainPart.size(); i++)
 	{
-		sumxy += i * mainPart.at(i);
+		sumxy += i * (mainPart.at(i) - info.threshold);
 		sumy += mainPart.at(i);
 	}
 	return (double)sumxy / sumy;
