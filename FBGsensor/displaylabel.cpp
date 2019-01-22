@@ -152,6 +152,17 @@ void displayLabel::mouseReleaseEvent(QMouseEvent *event)
 			update();
 		}
 	}
+	else if (event->button() == Qt::RightButton)
+	{
+		xBegin = wStart;
+		xEnd = wEnd;
+		yBegin = 0;
+		yEnd = 4096;
+		rePaintImage();
+		update();
+
+	}
+
 }
 
 //process keyboard press event
