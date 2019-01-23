@@ -436,8 +436,8 @@ void FBGsensor::spectrumSample()
 		currentChannel = 0;
 
 		//analyze the data
-		peakInfoModel->setnum(0, dtProcesser->getPeakWav(1545000, 1555000, 0), 
-			dtProcesser->getPeakWav(1545000, 1555000, 1));
+		peakInfoModel->setnum(0, dtProcesser->getPeakWav(1535000, 1545000, 0), 
+			dtProcesser->getPeakWav(1535000, 1545000, 1));
 
 		//write in the file
 		if (csvfile != nullptr && csvfile->isOpen())
