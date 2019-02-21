@@ -86,7 +86,7 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	return PeakInfo{ pos, length, thr};
 }
 
-// using center of gravity (minus threshold)
+// using center of gravity (subtract threshold)
 double DataProcess::findPeak_Centroid(PeakInfo info, quint32 chl) const
 {
 	QVector<quint16> mainPart = pData[chl].mid(info.pos, info.length);
