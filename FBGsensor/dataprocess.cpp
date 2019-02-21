@@ -72,7 +72,7 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	//if peak is too close to the base, then there is no peak
 	if ((peak - base) < 400)
 	{
-		return PeakInfo{ 0, 0 };
+		return PeakInfo{ 0, 0, thr };
 	}
 
 	quint32 pos = maxpos;
@@ -80,7 +80,7 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	{
 	}
 	quint32 length = maxpos - pos + 1;
-	for (length; pData[chl].at(pos + length - 1) > thr; length ++)
+	for (length; pData[chl].at(pos + length - 1) >= thr; length ++)
 	{
 	}
 	return PeakInfo{ pos, length, thr};
@@ -94,7 +94,7 @@ double DataProcess::findPeak_Centroid(PeakInfo info, quint32 chl) const
 	for (int i = 0; i < mainPart.size(); i++)
 	{
 		sumxy += i * (mainPart.at(i) - info.threshold);
-		sumy += mainPart.at(i);
+		sumy += (mainPart.at(i) - info.threshold);
 	}
 	return (double)sumxy / sumy;
 }
