@@ -8,6 +8,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QTime>
+#include <QSettings>
 #include "peakinfomodel.h"
 #include "serialportmanager.h"
 #include "doublevalidator.h"
@@ -49,6 +50,11 @@ FBGsensor::FBGsensor(QWidget *parent)
 	{
 		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
 	}
+
+	//init settings
+	QSettings settings("FBGconfig.ini", QSettings::IniFormat);
+	settings.setValue("sensors/1/portnum", 0);
+	qDebug() << settings.value("portnum").toInt() << settings.fileName();
 
 	//show test data
 	spectrumData[0].fill(2048);

@@ -51,6 +51,9 @@
     <ClCompile Include="peakinfomodel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sensorinfowidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="fbgsensor.h">
@@ -71,12 +74,18 @@
     <QtMoc Include="peakinfomodel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="sensorinfowidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="fbgsensor.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="displaylabel.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="sensorinfowidget.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
