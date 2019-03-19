@@ -52,9 +52,6 @@ FBGsensor::FBGsensor(QWidget *parent)
 	}
 
 	//init settings
-	QSettings settings("FBGconfig.ini", QSettings::IniFormat);
-	settings.setValue("sensors/1/portnum", 0);
-	qDebug() << settings.value("portnum").toInt() << settings.fileName();
 
 	//show test data
 	spectrumData[0].fill(2048);

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <QWidget>
-#include <QSettings>
 #include <QVector>
 #include "ui_sensorinfowidget.h"
+
 
 // the type of the sensor
 enum sensorType
@@ -17,7 +17,8 @@ struct  sensorInfo
 	QString ssName;		//sensor name
 	quint8 chl;			//channel number
 	sensorType type;	//sensor type
-	quint32 wavRange[2];//rough range of the wavelength
+	quint32 wavRangeStart;//rough start range of the wavelength
+	quint32 wavRangeEnd;	//rough end range of the wavelength
 	double k;			//calibration parameter, k
 	double b;			//calibration parameter, b
 };
