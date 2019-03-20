@@ -14,9 +14,8 @@ enum sensorType
 // to save the information of sensors
 struct  sensorInfo
 {
-	QString ssName;		//sensor name
-	quint8 chl;			//channel number
 	sensorType type;	//sensor type
+	quint8 chl;			//channel number
 	quint32 wavRangeStart;//rough start range of the wavelength
 	quint32 wavRangeEnd;	//rough end range of the wavelength
 	double k;			//calibration parameter, k

@@ -43,6 +43,7 @@ private:
 	QFile *csvfile = nullptr;
 	QTime *curTime;
 	PeakInfoModel  *peakInfoModel = nullptr;
+	QVector<sensorInfo> *ssInfo = nullptr;
 
 	bool firstSetInfo=true;			//if first set info, change the status of edit and btn
 // 	bool scanContinuously = false;		//if the scanning is continuously, resend msg after receiving msg

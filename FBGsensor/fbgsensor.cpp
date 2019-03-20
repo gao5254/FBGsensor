@@ -51,7 +51,8 @@ FBGsensor::FBGsensor(QWidget *parent)
 		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
 	}
 
-	//init settings
+	//init sensor info
+	ssInfo = ui.ssInfoWidget->ssInfo;
 
 	//show test data
 	spectrumData[0].fill(2048);
