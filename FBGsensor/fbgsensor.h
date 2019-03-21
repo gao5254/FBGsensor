@@ -53,4 +53,5 @@ private:
 	void showDeviceInfo(QByteArray msg);
 	void spectrumSample();
 	void loadSpectrumData(QByteArray msg);
+	void onSensorInfoChanged(QVector<sensorInfo> *info);
 };

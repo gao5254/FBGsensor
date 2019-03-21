@@ -65,3 +65,8 @@ sensorInfoWidget::~sensorInfoWidget()
 
 	} 
 }
+
+void sensorInfoWidget::on_sensorAddBtn_clicked()
+{
+	emit sensorInfoChanged(ssInfo);
+}

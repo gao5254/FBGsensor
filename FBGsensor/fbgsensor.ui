@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>886</width>
-    <height>772</height>
+    <width>869</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -224,11 +224,11 @@
             <height>80</height>
            </size>
           </property>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>80</number>
+          </attribute>
           <attribute name="verticalHeaderDefaultSectionSize">
            <number>25</number>
-          </attribute>
-          <attribute name="verticalHeaderMinimumSectionSize">
-           <number>20</number>
           </attribute>
          </widget>
         </item>

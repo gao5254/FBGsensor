@@ -32,6 +32,11 @@ public:
 
 	QVector<sensorInfo> *ssInfo = nullptr;
 
+public slots:
+	void on_sensorAddBtn_clicked();
+
+signals:
+	void sensorInfoChanged(QVector<sensorInfo> *info);
 private:
 	Ui::sensorInfoWidget ui;
 };

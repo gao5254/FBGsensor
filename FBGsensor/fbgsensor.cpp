@@ -19,6 +19,8 @@ FBGsensor::FBGsensor(QWidget *parent)
 {
 	ui.setupUi(this);
 
+	//init sensor info
+	ssInfo = ui.ssInfoWidget->ssInfo;
 
 	//initialize member
 	curTime = new QTime();
@@ -51,8 +53,6 @@ FBGsensor::FBGsensor(QWidget *parent)
 		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
 	}
 
-	//init sensor info
-	ssInfo = ui.ssInfoWidget->ssInfo;
 
 	//show test data
 	spectrumData[0].fill(2048);
@@ -100,7 +100,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 	//connnect
 	connect(serialPManager, &SerialPortManager::msgReceived, this, &FBGsensor::msgProcess);
-
+	connect(ui.ssInfoWidget, &sensorInfoWidget::sensorInfoChanged, this, &FBGsensor::onSensorInfoChanged);
 	//max the window
 // 	setWindowState(Qt::WindowMaximized);
 }
@@ -440,8 +440,8 @@ void FBGsensor::spectrumSample()
 		currentChannel = 0;
 
 		//analyze the data
-		peakInfoModel->setnum(0, dtProcesser->getPeakWav(1545000, 1555000, 0), 
-			dtProcesser->getPeakWav(1545000, 1555000, 1));
+// 		peakInfoModel->setnum(0, dtProcesser->getPeakWav(1545000, 1555000, 0), 
+// 			dtProcesser->getPeakWav(1545000, 1555000, 1));
 
 		//write in the file
 		if (csvfile != nullptr && csvfile->isOpen())
@@ -505,4 +505,24 @@ void FBGsensor::loadSpectrumData(QByteArray msg)
 	//goto spectrumSample to get next channel
 	currentChannel++;
 	spectrumSample();
+}
+
+//when the sensor info changed, change the peakInfoModel unit list
+void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
+{
+	QStringList strList, allUnit;
+	for (int i = 0; i < 6; ++i)
+	{
+		strList << "" << "";
+	}
+	allUnit << QString::fromLocal8Bit("¡æ") << "kPa" << "%RH";
+	int chnl[2] = { 0, 6 };
+
+	for (int i = 0; i < info->size(); ++i)
+	{
+		strList[chnl[info->at(i).chl]] = "pm";
+		strList[chnl[info->at(i).chl] + 1] = allUnit.at((int)(info->at(i).type));
+		chnl[info->at(i).chl] += 2;
+	}
+	peakInfoModel->setUnitList(strList);
 }
