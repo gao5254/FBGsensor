@@ -4,20 +4,19 @@
 PeakInfoModel::PeakInfoModel(QObject *parent)
 	: QAbstractTableModel(parent)
 {
-	peakTable[0].resize(2);
-	peakTable[1].resize(2);
+	peakTable.resize(12);
+	unitList.
 }
 
 PeakInfoModel::~PeakInfoModel()
 {
 }
 
-//set the number to the tabel 
-void PeakInfoModel::setnum(int col, double num1, double num2)
+//set the wavelength number and the corresponding measurement number to the tabel 
+void PeakInfoModel::setnum(const QVector<double> &table)
 {
 	beginResetModel();
-	peakTable[0][col] = num1;
-	peakTable[1][col] = num2;
+	peakTable = table;
 	endResetModel();
 }
 
@@ -28,14 +27,14 @@ int PeakInfoModel::rowCount(const QModelIndex &parent /*= QModelIndex()*/) const
 
 int PeakInfoModel::columnCount(const QModelIndex &parent /*= QModelIndex()*/) const 
 {
-	return peakTable[0].size();
+	return 6;
 }
 
 QVariant PeakInfoModel::data(const QModelIndex &index, int role /*= Qt::DisplayRole*/) const 
 {
 	if (!index.isValid() || role != Qt::DisplayRole)
 		return QVariant();
-	return QString::number(peakTable[index.row()].at(index.column()), 'f', 3);
+	return QString::number(peakTable.at(index.row * 6 + index.column()), 'f', 3) + unitList.at(index.row * 6 + index.column());
 }
 
 QVariant PeakInfoModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const 

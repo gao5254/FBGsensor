@@ -2,6 +2,7 @@
 
 #include <QAbstractTableModel>
 
+
 //the model to show the peak wavelength infomation in the main window
 
 class PeakInfoModel : public QAbstractTableModel
@@ -11,7 +12,8 @@ class PeakInfoModel : public QAbstractTableModel
 public:
 	PeakInfoModel(QObject *parent = nullptr);
 	~PeakInfoModel();
-	void setnum(int col, double num1, double num2);
+	void setnum(const QVector<double> &table);
+	void setUnitList(const QStringList &uList);
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -20,6 +22,9 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
 private:
-	QVector<double> peakTable[2];
-	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("峰值1") << QString::fromLocal8Bit("峰值2");
+	QVector<double> peakTable;
+	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("峰值1") << QString::fromLocal8Bit("测量值1")
+		<< QString::fromLocal8Bit("峰值2") << QString::fromLocal8Bit("测量值2")
+		<< QString::fromLocal8Bit("峰值3") << QString::fromLocal8Bit("测量值3");
+	QStringList unitList;
 };
