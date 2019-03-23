@@ -10,7 +10,8 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 	// read the config file
 	QSettings settings("FBGconfig.ini", QSettings::IniFormat);
 	// test whether there has sensor
-	if (settings.contains("sensor"))
+	qDebug() << settings.allKeys();
+	if (settings.contains("sensor/1/type"))
 	{
 		// load data to vector
 		int ssnum = settings.beginReadArray("sensor");
@@ -33,13 +34,13 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 		ssInfo = new QVector<sensorInfo>();
 	}
 	//delete later
-	ssInfo->resize(1);
-	(*ssInfo)[0].type = sensorType::Temperature;
-	(*ssInfo)[0].chl = 0;
-	(*ssInfo)[0].wavRangeStart = 1545000;
-	(*ssInfo)[0].wavRangeEnd = 1555000;
-	(*ssInfo)[0].k = 50;
-	(*ssInfo)[0].b = 100;
+// 	ssInfo->resize(1);
+// 	(*ssInfo)[0].type = sensorType::Temperature;
+// 	(*ssInfo)[0].chl = 0;
+// 	(*ssInfo)[0].wavRangeStart = 1545000;
+// 	(*ssInfo)[0].wavRangeEnd = 1555000;
+// 	(*ssInfo)[0].k = 0.0680;
+// 	(*ssInfo)[0].b = -105437.635;
 }
 
 sensorInfoWidget::~sensorInfoWidget()
@@ -69,4 +70,14 @@ sensorInfoWidget::~sensorInfoWidget()
 void sensorInfoWidget::on_sensorAddBtn_clicked()
 {
 	emit sensorInfoChanged(ssInfo);
+}
+
+sensorInfoModel::sensorInfoModel(const QVector<sensorInfo> &ssInfo, QObject *parent /*= nullptr*/)
+{
+	infoTable = ssInfo;
+}
+
+sensorInfoModel::~sensorInfoModel()
+{
+
 }

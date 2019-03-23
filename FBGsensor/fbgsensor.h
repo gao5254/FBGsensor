@@ -6,6 +6,7 @@
 //pre-declaration
 class SerialPortManager;
 class QFile;
+class QLCDNumber;
 class DataProcess;
 class PeakInfoModel;
 
@@ -44,6 +45,7 @@ private:
 	QTime *curTime;
 	PeakInfoModel  *peakInfoModel = nullptr;
 	QVector<sensorInfo> *ssInfo = nullptr;
+	QList<QLCDNumber*> lcdDisplay;
 
 	bool firstSetInfo=true;			//if first set info, change the status of edit and btn
 // 	bool scanContinuously = false;		//if the scanning is continuously, resend msg after receiving msg
@@ -54,4 +56,5 @@ private:
 	void spectrumSample();
 	void loadSpectrumData(QByteArray msg);
 	void onSensorInfoChanged(QVector<sensorInfo> *info);
+	QVector<double> analyzeData();
 };

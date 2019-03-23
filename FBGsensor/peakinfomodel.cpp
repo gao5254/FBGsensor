@@ -45,6 +45,10 @@ QVariant PeakInfoModel::data(const QModelIndex &index, int role /*= Qt::DisplayR
 {
 	if (!index.isValid() || role != Qt::DisplayRole)
 		return QVariant();
+	if (unitList.at(index.row() * 6 + index.column()) == "")
+	{
+		return QString::fromLocal8Bit("Î´Á¬½Ó");
+	}
 	return QString::number(peakTable.at(index.row() * 6 + index.column()), 'f', 3) + unitList.at(index.row() * 6 + index.column());
 }
 

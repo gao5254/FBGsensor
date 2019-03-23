@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QTime>
 #include <QSettings>
+#include <QLCDNumber>
 #include "peakinfomodel.h"
 #include "serialportmanager.h"
 #include "doublevalidator.h"
@@ -31,6 +32,8 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 	dtProcesser = new DataProcess((QObject*)this);
 	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
+	
+	lcdDisplay << ui.lcdNumber << ui.lcdNumber_2 << ui.lcdNumber_3;
 
 // 	peakInfoModel = new PeakInfoModel(2, 2, this);
 // 	QStandardItem *item = new QStandardItem("none");
@@ -45,6 +48,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 // 	qDebug() << ui.peakInfoView->rowHeight(0);
 
 	peakInfoModel = new PeakInfoModel(this);
+	onSensorInfoChanged(ssInfo);
 	ui.peakInfoView->setModel(peakInfoModel);
 
 	spectrumData = new QVector<quint16> [channelNum];
@@ -52,6 +56,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 	{
 		spectrumData[i].resize((waveEnd - waveStart) / waveStep + 1);
 	}
+
 
 
 	//show test data
@@ -74,6 +79,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 	//init tabwidget
 	ui.tabWidget->setCurrentIndex(0);
+	ui.tabWidget_2->setCurrentIndex(0);
 
 	//init color btn
 	ui.chnl1Color->setStyleSheet("QToolButton#chnl1Color{background-color: " + QColor(Qt::blue).name() + ";}"
@@ -439,9 +445,25 @@ void FBGsensor::spectrumSample()
 		ui.showLabel->update();
 		currentChannel = 0;
 
-		//analyze the data
-// 		peakInfoModel->setnum(0, dtProcesser->getPeakWav(1545000, 1555000, 0), 
-// 			dtProcesser->getPeakWav(1545000, 1555000, 1));
+		//analyze the data, calculate the wavelength and measurand according to the sensorInfo
+		QVector<double> dataTable = analyzeData();
+
+		//show data in the peakInfoView
+		QVector<double> pkTable(12);
+		int chnl[2] = { 0, 6 };
+		for (int i = 0; i < ssInfo->size(); ++i)		//construct the table in the model
+		{
+			pkTable[chnl[ssInfo->at(i).chl]] = dataTable.at(i * 2);
+			pkTable[chnl[ssInfo->at(i).chl] + 1] = dataTable.at(i * 2 + 1);
+			chnl[ssInfo->at(i).chl] += 2;
+		}
+		peakInfoModel->setnum(pkTable);
+
+		//show data in the lcdnumber
+		for (int i = 0; i < ssInfo->size(); ++i)
+		{
+			lcdDisplay[(int)(ssInfo->at(i).type)]->display(dataTable.at(i * 2 + 1));
+		}
 
 		//write in the file
 		if (csvfile != nullptr && csvfile->isOpen())
@@ -507,22 +529,42 @@ void FBGsensor::loadSpectrumData(QByteArray msg)
 	spectrumSample();
 }
 
-//when the sensor info changed, change the peakInfoModel unit list
+//when the sensor info changed, change the peakInfoModel unit list, set the lcd number
 void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 {
-	QStringList strList, allUnit;
+	QStringList strList, allUnit, lcdStr;
 	for (int i = 0; i < 6; ++i)
 	{
 		strList << "" << "";
 	}
 	allUnit << QString::fromLocal8Bit("¡æ") << "kPa" << "%RH";
+	lcdStr << "-----" << "-----" << "----";
 	int chnl[2] = { 0, 6 };
 
 	for (int i = 0; i < info->size(); ++i)
 	{
 		strList[chnl[info->at(i).chl]] = "pm";
 		strList[chnl[info->at(i).chl] + 1] = allUnit.at((int)(info->at(i).type));
+		lcdStr[(int)(info->at(i).type)] = "0";
 		chnl[info->at(i).chl] += 2;
 	}
 	peakInfoModel->setUnitList(strList);
+	for (int i = 0; i < 3; ++i)
+	{
+		lcdDisplay[i]->display(lcdStr.at(i));
+	}
+}
+
+//analyze the data and return a vector containing all { centerwavelength , measurand }
+QVector<double> FBGsensor::analyzeData()
+{
+	QVector<double> table(ssInfo->size() * 2);
+	for (int i = 0; i < ssInfo->size(); ++i)
+	{
+		//calculate center wavelength 
+		table[i * 2] = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, ssInfo->at(i).chl);
+		//calculate measurand
+		table[i * 2 + 1] = table[i * 2] * ssInfo->at(i).k + ssInfo->at(i).b;
+	}
+	return table;
 }

@@ -62,12 +62,12 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	}
 	quint32 num = endPos - beginPos + 1;
 	//subtract some large points from the total sum
-	for (int i = qMax(maxpos - 10, beginPos); i < qMin(maxpos + 10, endPos); i++)
+	for (int i = qMax(maxpos - 10, beginPos); i <= qMin(maxpos + 30, endPos); ++i)
 	{
 		total -= pData[chl].at(i);
 		num--;
 	}
-	double ratio = 0.3;
+	double ratio = 0.4;
 	quint16 base = total / num, thr = (quint16)((peak - base) * ratio) + base;
 	//if peak is too close to the base, then there is no peak
 	if ((peak - base) < 400)
