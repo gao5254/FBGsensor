@@ -10,7 +10,7 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 	// read the config file
 	QSettings settings("FBGconfig.ini", QSettings::IniFormat);
 	// test whether there has sensor
-	qDebug() << settings.allKeys();
+// 	qDebug() << settings.allKeys();
 	if (settings.contains("sensor/1/type"))
 	{
 		// load data to vector
@@ -20,11 +20,13 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 		{
 			settings.setArrayIndex(i);
 			(*ssInfo)[i].type = (sensorType)(settings.value("type").toInt());
-			(*ssInfo)[i].chl = settings.value("chl").toInt();
+// 			(*ssInfo)[i].chl = settings.value("chl").toInt();
 			(*ssInfo)[i].wavRangeStart = settings.value("wavrangestart").toInt();
 			(*ssInfo)[i].wavRangeEnd = settings.value("wavrangeend").toInt();
 			(*ssInfo)[i].k = settings.value("k").toDouble();
 			(*ssInfo)[i].b = settings.value("b").toDouble();
+			(*ssInfo)[i].chl = -1;
+			(*ssInfo)[i].isconnected = false;
 		}
 		settings.endArray();
 	} 
@@ -55,7 +57,7 @@ sensorInfoWidget::~sensorInfoWidget()
 		{
 			settings.setArrayIndex(i);
 			settings.setValue("type", (int)(ssInfo->at(i).type));
-			settings.setValue("chl", ssInfo->at(i).chl);
+// 			settings.setValue("chl", ssInfo->at(i).chl);
 			settings.setValue("wavrangestart", ssInfo->at(i).wavRangeStart);
 			settings.setValue("wavrangeend", ssInfo->at(i).wavRangeEnd);
 			settings.setValue("k", ssInfo->at(i).k);
@@ -72,6 +74,7 @@ void sensorInfoWidget::on_sensorAddBtn_clicked()
 	emit sensorInfoChanged(ssInfo);
 }
 
+//sensorinfo model,to show sensor info
 sensorInfoModel::sensorInfoModel(const QVector<sensorInfo> &ssInfo, QObject *parent /*= nullptr*/)
 {
 	infoTable = ssInfo;
@@ -81,3 +84,86 @@ sensorInfoModel::~sensorInfoModel()
 {
 
 }
+
+//set the info vector
+void sensorInfoModel::setInfo(const QVector<sensorInfo> &ssInfo)
+{
+	beginResetModel();
+	infoTable = ssInfo;
+	endResetModel();
+}
+
+int sensorInfoModel::rowCount(const QModelIndex &parent /*= QModelIndex()*/) const 
+{
+	return infoTable.size();
+}
+
+int sensorInfoModel::columnCount(const QModelIndex &parent /*= QModelIndex()*/) const 
+{
+	return Horiheader.size();
+}
+
+QVariant sensorInfoModel::data(const QModelIndex &index, int role /*= Qt::DisplayRole*/) const 
+{
+	if (!index.isValid() || role != Qt::DisplayRole)
+		return QVariant();
+	switch (index.column())
+	{
+	case 0:
+		return typeList.at(index.row());
+		break;
+	case 1:
+		return QString::number(infoTable.at(index.row()).wavRangeStart);
+		break;
+	case 2:
+		return QString::number(infoTable.at(index.row()).wavRangeEnd);
+		break;
+	case 3:
+		return QString::number(infoTable.at(index.row()).k, 'f', 3);
+		break;
+	case 4:
+		return QString::number(infoTable.at(index.row()).b, 'f', 3);
+		break;
+	case 5:
+		if (infoTable.at(index.row()).chl == -1)
+		{
+			return QString::fromLocal8Bit("未连接");
+		} 
+		else
+		{
+			return QString::fromLocal8Bit("通道") + QString::number(infoTable.at(index.row()).chl + 1);
+		}
+		break;
+	case 6:
+		if (infoTable.at(index.row()).isconnected)
+		{
+			return "Yes";
+		}
+		else
+		{
+			return "No";
+		}
+		break;
+	default:
+		return QVariant();
+		break;
+	}
+}
+
+QVariant sensorInfoModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const
+{
+	if (role == Qt::DisplayRole)
+	{
+		if (orientation == Qt::Horizontal)
+		{
+			return Horiheader.at(section);
+		}
+		else if (orientation == Qt::Vertical)
+		{
+			return QString::number(section + 1);
+		}
+	}
+	return QVariant();
+
+}
+

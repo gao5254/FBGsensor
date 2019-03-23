@@ -19,7 +19,7 @@ struct  sensorInfo
 	quint32 wavRangeEnd;	//rough end range of the wavelength
 	double k;			//calibration parameter, k
 	double b;			//calibration parameter, b
-	quint8 chl;			//channel number
+	int chl;			//channel number
 	bool isconnected;	//connecting status
 };
 
@@ -28,7 +28,7 @@ class sensorInfoModel :public QAbstractTableModel
 	Q_OBJECT
 
 public:
-	sensorInfoModel( const QVector<sensorInfo> &ssInfo, QObject *parent = nullptr);
+	sensorInfoModel(const QVector<sensorInfo> &ssInfo, QObject *parent = nullptr);
 	~sensorInfoModel();
 	void setInfo(const QVector<sensorInfo> &ssInfo);
 
@@ -38,11 +38,13 @@ public:
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
+	const QStringList typeList = QStringList() << QString::fromLocal8Bit("温度") << QString::fromLocal8Bit("压力") << QString::fromLocal8Bit("湿度");
+
 private:
 	QVector<sensorInfo> infoTable;
-	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("序号") << QString::fromLocal8Bit("类型")
-		<< QString::fromLocal8Bit("特征波段") << QString::fromLocal8Bit("标定参数k")
-		<< QString::fromLocal8Bit("标定参数b") << QString::fromLocal8Bit("所在通道") << QString::fromLocal8Bit("已连接");
+	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("类型") << QString::fromLocal8Bit("起始波长") << QString::fromLocal8Bit("终止波长") 
+		<< QString::fromLocal8Bit("标定参数k") << QString::fromLocal8Bit("标定参数b") 
+		<< QString::fromLocal8Bit("所在通道") << QString::fromLocal8Bit("已连接");
 
 };
 
@@ -55,6 +57,8 @@ public:
 	~sensorInfoWidget();
 
 	QVector<sensorInfo> *ssInfo = nullptr;
+	const QStringList unitList = QStringList() << QString::fromLocal8Bit("℃") << "kPa" << "%RH";
+
 
 public slots:
 	void on_sensorAddBtn_clicked();

@@ -532,21 +532,24 @@ void FBGsensor::loadSpectrumData(QByteArray msg)
 //when the sensor info changed, change the peakInfoModel unit list, set the lcd number
 void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 {
-	QStringList strList, allUnit, lcdStr;
+	QStringList strList, lcdStr;
 	for (int i = 0; i < 6; ++i)
 	{
 		strList << "" << "";
 	}
-	allUnit << QString::fromLocal8Bit("¡æ") << "kPa" << "%RH";
+
 	lcdStr << "-----" << "-----" << "----";
 	int chnl[2] = { 0, 6 };
 
 	for (int i = 0; i < info->size(); ++i)
 	{
-		strList[chnl[info->at(i).chl]] = "pm";
-		strList[chnl[info->at(i).chl] + 1] = allUnit.at((int)(info->at(i).type));
-		lcdStr[(int)(info->at(i).type)] = "0";
-		chnl[info->at(i).chl] += 2;
+		if (info->at(i).isconnected)
+		{
+			strList[chnl[info->at(i).chl]] = "pm";
+			strList[chnl[info->at(i).chl] + 1] = ui.ssInfoWidget->unitList.at((int)(info->at(i).type));
+			lcdStr[(int)(info->at(i).type)] = "0";
+			chnl[info->at(i).chl] += 2;
+		}
 	}
 	peakInfoModel->setUnitList(strList);
 	for (int i = 0; i < 3; ++i)
@@ -561,7 +564,8 @@ QVector<double> FBGsensor::analyzeData()
 	QVector<double> table(ssInfo->size() * 2);
 	for (int i = 0; i < ssInfo->size(); ++i)
 	{
-		//calculate center wavelength 
+		//TODO:
+		//calculate center wavelength
 		table[i * 2] = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, ssInfo->at(i).chl);
 		//calculate measurand
 		table[i * 2 + 1] = table[i * 2] * ssInfo->at(i).k + ssInfo->at(i).b;
