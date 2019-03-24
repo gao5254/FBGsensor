@@ -48,7 +48,6 @@ FBGsensor::FBGsensor(QWidget *parent)
 // 	qDebug() << ui.peakInfoView->rowHeight(0);
 
 	peakInfoModel = new PeakInfoModel(this);
-	onSensorInfoChanged(ssInfo);
 	ui.peakInfoView->setModel(peakInfoModel);
 
 	spectrumData = new QVector<quint16> [channelNum];
@@ -453,16 +452,22 @@ void FBGsensor::spectrumSample()
 		int chnl[2] = { 0, 6 };
 		for (int i = 0; i < ssInfo->size(); ++i)		//construct the table in the model
 		{
-			pkTable[chnl[ssInfo->at(i).chl]] = dataTable.at(i * 2);
-			pkTable[chnl[ssInfo->at(i).chl] + 1] = dataTable.at(i * 2 + 1);
-			chnl[ssInfo->at(i).chl] += 2;
+			if (ssInfo->at(i).isconnected)
+			{
+				pkTable[chnl[ssInfo->at(i).chl]] = dataTable.at(i * 2);
+				pkTable[chnl[ssInfo->at(i).chl] + 1] = dataTable.at(i * 2 + 1);
+				chnl[ssInfo->at(i).chl] += 2;
+			}
 		}
 		peakInfoModel->setnum(pkTable);
 
 		//show data in the lcdnumber
 		for (int i = 0; i < ssInfo->size(); ++i)
 		{
-			lcdDisplay[(int)(ssInfo->at(i).type)]->display(dataTable.at(i * 2 + 1));
+			if (ssInfo->at(i).isconnected)
+			{
+				lcdDisplay[(int)(ssInfo->at(i).type)]->display(dataTable.at(i * 2 + 1));
+			}
 		}
 
 		//write in the file
@@ -538,7 +543,7 @@ void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 		strList << "" << "";
 	}
 
-	lcdStr << "-----" << "-----" << "----";
+	lcdStr << "-----" << "-----" << "-----";
 	int chnl[2] = { 0, 6 };
 
 	for (int i = 0; i < info->size(); ++i)
@@ -564,11 +569,13 @@ QVector<double> FBGsensor::analyzeData()
 	QVector<double> table(ssInfo->size() * 2);
 	for (int i = 0; i < ssInfo->size(); ++i)
 	{
-		//TODO:
-		//calculate center wavelength
-		table[i * 2] = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, ssInfo->at(i).chl);
-		//calculate measurand
-		table[i * 2 + 1] = table[i * 2] * ssInfo->at(i).k + ssInfo->at(i).b;
+		if (ssInfo->at(i).isconnected)
+		{
+			//calculate center wavelength
+			table[i * 2] = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, ssInfo->at(i).chl);
+			//calculate measurand
+			table[i * 2 + 1] = table[i * 2] * ssInfo->at(i).k + ssInfo->at(i).b;
+		}
 	}
 	return table;
 }

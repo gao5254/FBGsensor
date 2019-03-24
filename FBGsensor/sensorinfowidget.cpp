@@ -10,7 +10,6 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 	// read the config file
 	QSettings settings("FBGconfig.ini", QSettings::IniFormat);
 	// test whether there has sensor
-// 	qDebug() << settings.allKeys();
 	if (settings.contains("sensor/1/type"))
 	{
 		// load data to vector
@@ -43,6 +42,12 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 // 	(*ssInfo)[0].wavRangeEnd = 1555000;
 // 	(*ssInfo)[0].k = 0.0680;
 // 	(*ssInfo)[0].b = -105437.635;
+
+	//init model
+	ssmodel = new sensorInfoModel((*ssInfo), this); 
+	ui.sensorInfoView.setModel(ssmodel);
+
+	connect(this, &sensorInfoWidget::sensorInfoChanged, ssmodel, &sensorInfoModel::setInfo);
 }
 
 sensorInfoWidget::~sensorInfoWidget()
@@ -69,8 +74,40 @@ sensorInfoWidget::~sensorInfoWidget()
 	} 
 }
 
-void sensorInfoWidget::on_sensorAddBtn_clicked()
+//get the isDetected
+bool sensorInfoWidget::getDetectStatus() const
 {
+	return isdetected;
+}
+
+void sensorInfoWidget::setChannelNum(const QVector<int> &chnl)
+{
+	Q_ASSERT(chnl.size() == ssInfo->size());
+	for (int i = 0; i < ssInfo->size(); ++i)
+	{
+		if (chnl.at(i) == -1)
+		{
+			(*ssInfo)[i].isconnected = false;
+			(*ssInfo)[i].chl = -1;
+		} 
+		else
+		{
+			(*ssInfo)[i].isconnected = true;
+			(*ssInfo)[i].chl = chnl.at(i);
+		}
+	}
+	isdetected = true;
+	emit sensorInfoChanged(ssInfo);
+}
+
+void sensorInfoWidget::on_sensorDetectBtn_clicked()
+{
+	isdetected = false;
+	for (int i = 0; i < ssInfo->size(); ++i)
+	{
+		(*ssInfo)[i].isconnected = false;
+		(*ssInfo)[i].chl = -1; 
+	}
 	emit sensorInfoChanged(ssInfo);
 }
 
@@ -86,10 +123,10 @@ sensorInfoModel::~sensorInfoModel()
 }
 
 //set the info vector
-void sensorInfoModel::setInfo(const QVector<sensorInfo> &ssInfo)
+void sensorInfoModel::setInfo(const QVector<sensorInfo> *ssInfo)
 {
 	beginResetModel();
-	infoTable = ssInfo;
+	infoTable = *ssInfo;
 	endResetModel();
 }
 

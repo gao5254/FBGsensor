@@ -30,7 +30,6 @@ class sensorInfoModel :public QAbstractTableModel
 public:
 	sensorInfoModel(const QVector<sensorInfo> &ssInfo, QObject *parent = nullptr);
 	~sensorInfoModel();
-	void setInfo(const QVector<sensorInfo> &ssInfo);
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -39,6 +38,10 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
 	const QStringList typeList = QStringList() << QString::fromLocal8Bit("ÎÂ¶È") << QString::fromLocal8Bit("Ñ¹Á¦") << QString::fromLocal8Bit("Êª¶È");
+
+	public slots:
+	void setInfo(const QVector<sensorInfo> *ssInfo);
+
 
 private:
 	QVector<sensorInfo> infoTable;
@@ -55,16 +58,21 @@ class sensorInfoWidget : public QWidget
 public:
 	sensorInfoWidget(QWidget *parent = Q_NULLPTR);
 	~sensorInfoWidget();
+	bool getDetectStatus() const;
+	void setChannelNum(const QVector<int> &chnl);
 
 	QVector<sensorInfo> *ssInfo = nullptr;
 	const QStringList unitList = QStringList() << QString::fromLocal8Bit("¡æ") << "kPa" << "%RH";
 
 
 public slots:
-	void on_sensorAddBtn_clicked();
+	void on_sensorDetectBtn_clicked();
 
 signals:
-	void sensorInfoChanged(QVector<sensorInfo> *info);
+	void sensorInfoChanged(QVector<sensorInfo> *info) const;
 private:
 	Ui::sensorInfoWidget ui;
+	sensorInfoModel *ssmodel = nullptr;
+
+	bool isdetected = false;
 };
