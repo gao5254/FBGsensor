@@ -34,6 +34,10 @@ FBGsensor::FBGsensor(QWidget *parent)
 	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 	
 	lcdDisplay << ui.lcdNumber << ui.lcdNumber_2 << ui.lcdNumber_3;
+	for (int i = 0; i < lcdDisplay.size(); ++i)
+	{
+		lcdDisplay.at(i)->display("-----");
+	}
 
 // 	peakInfoModel = new PeakInfoModel(2, 2, this);
 // 	QStandardItem *item = new QStandardItem("none");
@@ -47,7 +51,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 // 	ui.peakInfoView->resizeRowsToContents();
 // 	qDebug() << ui.peakInfoView->rowHeight(0);
 
-	peakInfoModel = new PeakInfoModel(this);
+	peakInfoModel = new PeakInfoModel(ssInfo->size(), this);
 	ui.peakInfoView->setModel(peakInfoModel);
 
 	spectrumData = new QVector<quint16> [channelNum];
@@ -444,12 +448,22 @@ void FBGsensor::spectrumSample()
 		ui.showLabel->update();
 		currentChannel = 0;
 
-		//analyze the data, calculate the wavelength and measurand according to the sensorInfo
-		QVector<double> dataTable = analyzeData();
+		//analyse data or detect sensor
+		QVector<double> dataTable;
+		if (ui.ssInfoWidget->getDetectStatus())
+		{
+			//analyze the data, calculate the wavelength and measurand according to the sensorInfo
+			dataTable = analyzeData();
+		}
+		else
+		{
+			//detect the sensor, also return the wavelength
+			dataTable = detectSensor();
+		}
 
 		//show data in the peakInfoView
-		QVector<double> pkTable(12);
-		int chnl[2] = { 0, 6 };
+		QVector<double> pkTable(ssInfo->size() * 4);
+		int chnl[2] = { 0, ssInfo->size() * 2};
 		for (int i = 0; i < ssInfo->size(); ++i)		//construct the table in the model
 		{
 			if (ssInfo->at(i).isconnected)
@@ -538,13 +552,13 @@ void FBGsensor::loadSpectrumData(QByteArray msg)
 void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 {
 	QStringList strList, lcdStr;
-	for (int i = 0; i < 6; ++i)
+	for (int i = 0; i < info->size(); ++i)
 	{
-		strList << "" << "";
+		strList << "" << "" << "" << "";
 	}
 
 	lcdStr << "-----" << "-----" << "-----";
-	int chnl[2] = { 0, 6 };
+	int chnl[2] = { 0, info->size() * 2 };
 
 	for (int i = 0; i < info->size(); ++i)
 	{
@@ -559,7 +573,7 @@ void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 	peakInfoModel->setUnitList(strList);
 	for (int i = 0; i < 3; ++i)
 	{
-		lcdDisplay[i]->display(lcdStr.at(i));
+		lcdDisplay.at(i)->display(lcdStr.at(i));
 	}
 }
 
@@ -577,5 +591,29 @@ QVector<double> FBGsensor::analyzeData()
 			table[i * 2 + 1] = table[i * 2] * ssInfo->at(i).k + ssInfo->at(i).b;
 		}
 	}
+	return table;
+}
+
+QVector<double> FBGsensor::detectSensor()
+{
+	QVector<double> table(ssInfo->size() * 2);
+	QVector<int> chnl(ssInfo->size());
+	chnl.fill(-1);
+	//detect the sensor, set their channel number
+	for (int i = 0; i < ssInfo->size(); ++i)
+	{
+		for (int j = 0; j < channelNum; ++j)
+		{
+			double wav = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, j);
+			if (wav > 0)
+			{
+				chnl[i] = j + 1;
+				table[i * 2] = wav;
+				table[i * 2 + 1] = wav * ssInfo->at(i).k + ssInfo->at(i).b;
+				break;
+			}
+		}
+	}
+	ui.ssInfoWidget->setChannelNum(chnl);
 	return table;
 }

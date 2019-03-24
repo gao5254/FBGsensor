@@ -1,13 +1,14 @@
 #include "peakinfomodel.h"
 
 
-PeakInfoModel::PeakInfoModel(QObject *parent)
+PeakInfoModel::PeakInfoModel(int size, QObject *parent)
 	: QAbstractTableModel(parent)
 {
-	peakTable.resize(12);
-	for (int i = 0; i < 6; ++i)
+	peakTable.resize(size * 4);
+	for (int i = 0; i < size; ++i)
 	{
-		unitList << "" << "";
+		unitList << "" << "" << "" << "";
+		Horiheader << QString::fromLocal8Bit("波长值") + QString::number(i + 1) << QString::fromLocal8Bit("测量值") + QString::number(i + 1);
 	}
 }
 
@@ -18,7 +19,17 @@ PeakInfoModel::~PeakInfoModel()
 //set the calculation tabel to the tabel 
 void PeakInfoModel::setnum(const QVector<double> &table)
 {
+	Q_ASSERT(peakTable.size() == table.size());
 	beginResetModel();
+// 	if (peakTable.size() != table.size())
+// 	{
+// 		unitList = QStringList();
+// 		Horiheader = QStringList();
+// 		for (int i = 0; i < table.size(); ++i)
+// 		{
+// 			Horiheader << QString::fromLocal8Bit("波长值") + QString::number(i + 1) << QString::fromLocal8Bit("测量值") + QString::number(i + 1);
+// 		}
+// 	}
 	peakTable = table;
 	endResetModel();
 }
@@ -26,6 +37,7 @@ void PeakInfoModel::setnum(const QVector<double> &table)
 //set the unit list
 void PeakInfoModel::setUnitList(const QStringList &uList)
 {
+	Q_ASSERT(uList.size() == unitList.size());
 	beginResetModel();
 	unitList = uList;
 	endResetModel();
@@ -38,7 +50,7 @@ int PeakInfoModel::rowCount(const QModelIndex &parent /*= QModelIndex()*/) const
 
 int PeakInfoModel::columnCount(const QModelIndex &parent /*= QModelIndex()*/) const 
 {
-	return 6;
+	return peakTable.size() / 2;
 }
 
 QVariant PeakInfoModel::data(const QModelIndex &index, int role /*= Qt::DisplayRole*/) const 

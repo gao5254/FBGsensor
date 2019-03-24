@@ -33,8 +33,8 @@ double DataProcess::getPeakWav(quint32 rangeStart, quint32 rangeEnd, quint32 chl
 	PeakInfo peakInfo = getMainPart(begeinPos, endPos, chl);
 	if (peakInfo.length == 0 && peakInfo.pos == 0)
 	{
-		//no peak, return 0
-		return 0;
+		//no peak, return -1
+		return -1;
 	}
 	double peakPos = findPeak_Centroid(peakInfo, chl);
 	return (peakPos + peakInfo.pos) * wStep + wStart;

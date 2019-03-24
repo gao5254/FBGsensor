@@ -45,9 +45,9 @@ public:
 
 private:
 	QVector<sensorInfo> infoTable;
-	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("类型") << QString::fromLocal8Bit("起始波长") << QString::fromLocal8Bit("终止波长") 
+	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("类型") << QString::fromLocal8Bit("起始特征波长") << QString::fromLocal8Bit("终止特征波长") 
 		<< QString::fromLocal8Bit("标定参数k") << QString::fromLocal8Bit("标定参数b") 
-		<< QString::fromLocal8Bit("所在通道") << QString::fromLocal8Bit("已连接");
+		<< QString::fromLocal8Bit("所在通道") << QString::fromLocal8Bit("是否连接");
 
 };
 

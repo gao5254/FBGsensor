@@ -10,7 +10,7 @@ class PeakInfoModel : public QAbstractTableModel
 	Q_OBJECT
 
 public:
-	PeakInfoModel(QObject *parent = nullptr);
+	PeakInfoModel(int size, QObject *parent = nullptr);
 	~PeakInfoModel();
 	void setnum(const QVector<double> &table);
 	void setUnitList(const QStringList &uList);
@@ -23,8 +23,6 @@ public:
 
 private:
 	QVector<double> peakTable;
-	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("峰值1") << QString::fromLocal8Bit("测量值1")
-		<< QString::fromLocal8Bit("峰值2") << QString::fromLocal8Bit("测量值2")
-		<< QString::fromLocal8Bit("峰值3") << QString::fromLocal8Bit("测量值3");
+	QStringList Horiheader;
 	QStringList unitList;
 };

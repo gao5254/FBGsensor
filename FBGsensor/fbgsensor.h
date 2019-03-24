@@ -57,4 +57,5 @@ private:
 	void loadSpectrumData(QByteArray msg);
 	void onSensorInfoChanged(QVector<sensorInfo> *info);
 	QVector<double> analyzeData();
+	QVector<double> detectSensor();
 };

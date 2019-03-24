@@ -45,7 +45,7 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 
 	//init model
 	ssmodel = new sensorInfoModel((*ssInfo), this); 
-	ui.sensorInfoView.setModel(ssmodel);
+	ui.sensorInfoView->setModel(ssmodel);
 
 	connect(this, &sensorInfoWidget::sensorInfoChanged, ssmodel, &sensorInfoModel::setInfo);
 }
@@ -53,25 +53,25 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 sensorInfoWidget::~sensorInfoWidget()
 {
 	//write the ini file
-	QSettings settings("FBGconfig.ini", QSettings::IniFormat);
-	settings.remove("sensor");
-	if (ssInfo->size() > 0)
-	{
-		settings.beginWriteArray("sensor");
-		for (int i = 0; i < ssInfo->size(); ++i)
-		{
-			settings.setArrayIndex(i);
-			settings.setValue("type", (int)(ssInfo->at(i).type));
-// 			settings.setValue("chl", ssInfo->at(i).chl);
-			settings.setValue("wavrangestart", ssInfo->at(i).wavRangeStart);
-			settings.setValue("wavrangeend", ssInfo->at(i).wavRangeEnd);
-			settings.setValue("k", ssInfo->at(i).k);
-			settings.setValue("b", ssInfo->at(i).b);
-
-		}
-		settings.endArray();
-
-	} 
+// 	QSettings settings("FBGconfig.ini", QSettings::IniFormat);
+// 	settings.remove("sensor");
+// 	if (ssInfo->size() > 0)
+// 	{
+// 		settings.beginWriteArray("sensor");
+// 		for (int i = 0; i < ssInfo->size(); ++i)
+// 		{
+// 			settings.setArrayIndex(i);
+// 			settings.setValue("type", (int)(ssInfo->at(i).type));
+// // 			settings.setValue("chl", ssInfo->at(i).chl);
+// 			settings.setValue("wavrangestart", ssInfo->at(i).wavRangeStart);
+// 			settings.setValue("wavrangeend", ssInfo->at(i).wavRangeEnd);
+// 			settings.setValue("k", ssInfo->at(i).k);
+// 			settings.setValue("b", ssInfo->at(i).b);
+// 
+// 		}
+// 		settings.endArray();
+// 
+// 	} 
 }
 
 //get the isDetected
