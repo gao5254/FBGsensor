@@ -29,6 +29,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 	serialPManager = new SerialPortManager((QObject*)this);
 
 	sendMsgTimer = new QTimer(this);
+	sendMsgTimer->setSingleShot(true);
 
 	dtProcesser = new DataProcess((QObject*)this);
 	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
@@ -149,8 +150,12 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 			msgBox.exec();
 			return;
 		}
+
+		sendMsgTimer->disconnect();
+		connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showDisconnectMsg);
 		//get device info
 		serialPManager->getDeviceInfo();
+		sendMsgTimer->start(3000);
 		firstSetInfo = true;
 	} 
 	else
@@ -188,12 +193,12 @@ void FBGsensor::on_setParaBtn_clicked()
 // 	quint16 dStep = (quint16)(ui.wavStepEdit->text().toFloat()*1000.0);
 	quint16 dStep = (quint16)(ui.wavStepEdit->text().remove('.').toUInt());
 
-	//set info
-	serialPManager->setDeviceInfo(dStart, dEnd, dStep, channelNum);
 	//get device info, in a appropriate time
 	sendMsgTimer->disconnect();
 	connect(sendMsgTimer, &QTimer::timeout, serialPManager, &SerialPortManager::getDeviceInfo);
-	sendMsgTimer->start(100);
+	//set info
+	serialPManager->setDeviceInfo(dStart, dEnd, dStep, channelNum);
+	sendMsgTimer->start(500);
 
 }
 
@@ -273,9 +278,9 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 		currentChannel = 0;
 // 		t.start();
 		sendMsgTimer->disconnect();
-		connect(sendMsgTimer, &QTimer::timeout, serialPManager, &SerialPortManager::scanOnce);
+		connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showDisconnectMsg);
 		serialPManager->scanOnce();
-		sendMsgTimer->start(2000);
+		sendMsgTimer->start(3000);
 	} 
 	else
 	{
@@ -350,6 +355,12 @@ void FBGsensor::on_autoAttachCheck_toggled(bool checked)
 //process the received msg, depending on the 5th bit 
 void FBGsensor::msgProcess(QByteArray msg)
 {
+	//stop the timer first
+	if (sendMsgTimer->isActive())
+	{
+		sendMsgTimer->stop();
+	}
+
 	switch ((uchar)msg.at(5))
 	{
 	case 0x87:
@@ -369,11 +380,6 @@ void FBGsensor::msgProcess(QByteArray msg)
 //set the number, enable the edit, change the text on btn, show success info
 void FBGsensor::showDeviceInfo(QByteArray msg)
 {
-	//stop the timer first
-	if (sendMsgTimer->isActive())
-	{
-		sendMsgTimer->stop();
-	}
 	//set the parameter from msg
 	quint16 dStart = SerialPortManager::getNum(msg, 8), dEnd = SerialPortManager::getNum(msg, 10);
 	quint16 temp = (quint32)(uchar)(msg.at(14));
@@ -430,11 +436,6 @@ void FBGsensor::showDeviceInfo(QByteArray msg)
 //scan finish, get sample data
 void FBGsensor::spectrumSample()
 {
-	//stop the timer first
-	if (sendMsgTimer->isActive())
-	{
-		sendMsgTimer->stop();
-	}
 	if (!scanStarted)
 	{
 		return;
@@ -508,9 +509,9 @@ void FBGsensor::spectrumSample()
 			statusLabel->setText(QString::fromLocal8Bit("连续采集计时（s）：") + QString::number(curTime->elapsed() / 1000));
 
 			sendMsgTimer->disconnect();
-			connect(sendMsgTimer, &QTimer::timeout, serialPManager, &SerialPortManager::scanOnce);
+			connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showDisconnectMsg);
 			serialPManager->scanOnce();
-			sendMsgTimer->start(2000);
+			sendMsgTimer->start(3000);
 
 		} 
 		else
@@ -575,6 +576,23 @@ void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 	{
 		lcdDisplay.at(i)->display(lcdStr.at(i));
 	}
+}
+
+//show disconnect message box
+void FBGsensor::showDisconnectMsg()
+{
+	if (ui.scanBtn->isChecked())
+	{
+		ui.scanBtn->setChecked(false);
+	}
+	if (ui.openDeviceBtn->isChecked())
+	{
+		ui.openDeviceBtn->setChecked(false);
+	}
+	QMessageBox msgBox;
+	msgBox.setText(QString::fromLocal8Bit("连接超时，检查设备电源是否开启"));
+	msgBox.exec();
+
 }
 
 //analyze the data and return a vector containing all { centerwavelength , measurand }
