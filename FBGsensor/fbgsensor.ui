@@ -21,7 +21,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="measureTab">
        <attribute name="title">
@@ -346,7 +346,7 @@
            </size>
           </property>
           <attribute name="horizontalHeaderDefaultSectionSize">
-           <number>80</number>
+           <number>90</number>
           </attribute>
           <attribute name="verticalHeaderDefaultSectionSize">
            <number>25</number>

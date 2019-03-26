@@ -57,11 +57,11 @@ QVariant PeakInfoModel::data(const QModelIndex &index, int role /*= Qt::DisplayR
 {
 	if (!index.isValid() || role != Qt::DisplayRole)
 		return QVariant();
-	if (unitList.at(index.row() * 6 + index.column()) == "")
+	if (unitList.at(index.row() * peakTable.size() / 2 + index.column()) == "")
 	{
 		return QString::fromLocal8Bit("Î´Á¬½Ó");
 	}
-	return QString::number(peakTable.at(index.row() * 6 + index.column()), 'f', 3) + unitList.at(index.row() * 6 + index.column());
+	return QString::number(peakTable.at(index.row() * peakTable.size() / 2 + index.column()), 'f', 3) + unitList.at(index.row() * peakTable.size() / 2 + index.column());
 }
 
 QVariant PeakInfoModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const 

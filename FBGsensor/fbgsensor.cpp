@@ -68,6 +68,21 @@ FBGsensor::FBGsensor(QWidget *parent)
 	spectrumData[1].fill(3052);
 	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 // 	qDebug() << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+	QVector<quint16> temparr(2051);
+	QFile file("E:\\Users\\workG\\Desktop\\20190326-2136.csv");
+	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, &temparr);
+	QTextStream data(&file);
+	if (file.open(QFile::ReadOnly | QFile::Text))
+	{
+		data.readLine();
+		QString line = data.readLine();
+		QStringList numlist = line.split(',');
+		for (int i = 2; i < (numlist.size() - 1); ++i)
+		{
+			temparr[i-2] = numlist.at(i).toUInt();
+		}
+	}
+	double center = dtProcesser->getPeakWav(1545000, 1555000, 0);
 	//delete later
 
 
@@ -152,10 +167,10 @@ void FBGsensor::on_openDeviceBtn_toggled(bool chk)
 		}
 
 		sendMsgTimer->disconnect();
-		connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showDisconnectMsg);
+		connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showOvertimeMsg);
 		//get device info
 		serialPManager->getDeviceInfo();
-		sendMsgTimer->start(3000);
+		sendMsgTimer->start(2500);
 		firstSetInfo = true;
 	} 
 	else
@@ -278,9 +293,9 @@ void FBGsensor::on_scanBtn_toggled(bool chk)
 		currentChannel = 0;
 // 		t.start();
 		sendMsgTimer->disconnect();
-		connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showDisconnectMsg);
+		connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showOvertimeMsg);
 		serialPManager->scanOnce();
-		sendMsgTimer->start(3000);
+		sendMsgTimer->start(2500);
 	} 
 	else
 	{
@@ -450,7 +465,7 @@ void FBGsensor::spectrumSample()
 		currentChannel = 0;
 
 		//analyse data or detect sensor
-		QVector<double> dataTable;
+		QVector<double> dataTable;		//datatable is a ssinfo.size()*2 vector, containing the wavelength and measurand of each sensor
 		if (ui.ssInfoWidget->getDetectStatus())
 		{
 			//analyze the data, calculate the wavelength and measurand according to the sensorInfo
@@ -497,6 +512,7 @@ void FBGsensor::spectrumSample()
 				{
 					data << ',' << ad;
 				}
+				data << ','<< qSetRealNumberPrecision(10) << dataTable[i];
 				data << endl;
 			}
 		}
@@ -509,9 +525,9 @@ void FBGsensor::spectrumSample()
 			statusLabel->setText(QString::fromLocal8Bit("连续采集计时（s）：") + QString::number(curTime->elapsed() / 1000));
 
 			sendMsgTimer->disconnect();
-			connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showDisconnectMsg);
+			connect(sendMsgTimer, &QTimer::timeout, this, &FBGsensor::showOvertimeMsg);
 			serialPManager->scanOnce();
-			sendMsgTimer->start(3000);
+			sendMsgTimer->start(2500);
 
 		} 
 		else
@@ -579,7 +595,7 @@ void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 }
 
 //show disconnect message box
-void FBGsensor::showDisconnectMsg()
+void FBGsensor::showOvertimeMsg()
 {
 	if (ui.scanBtn->isChecked())
 	{
@@ -591,6 +607,7 @@ void FBGsensor::showDisconnectMsg()
 	}
 	QMessageBox msgBox;
 	msgBox.setText(QString::fromLocal8Bit("连接超时，检查设备电源是否开启"));
+	msgBox.setIcon(QMessageBox::Warning);
 	msgBox.exec();
 
 }
@@ -625,7 +642,7 @@ QVector<double> FBGsensor::detectSensor()
 			double wav = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, j);
 			if (wav > 0)
 			{
-				chnl[i] = j + 1;
+				chnl[i] = j;
 				table[i * 2] = wav;
 				table[i * 2 + 1] = wav * ssInfo->at(i).k + ssInfo->at(i).b;
 				break;

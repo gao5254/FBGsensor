@@ -55,7 +55,7 @@
         </font>
        </property>
        <property name="text">
-        <string>重新检测传感器</string>
+        <string>重置传感器状态</string>
        </property>
       </widget>
      </item>
