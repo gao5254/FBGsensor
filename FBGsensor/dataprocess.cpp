@@ -37,7 +37,7 @@ double DataProcess::getPeakWav(quint32 rangeStart, quint32 rangeEnd, quint32 chl
 		return -1;
 	}
 	double peakPos = findPeak_Centroid(peakInfo, chl);
-	return (peakPos + 1 + peakInfo.pos) * wStep + wStart;
+	return (peakPos + peakInfo.pos) * wStep + wStart;
 }
 
 //get the main part from the range (beginPos, endPos) in the chl-th spectrum
@@ -84,7 +84,7 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	for (length; pData[chl].at(pos + length - 1) >= thr; length ++)
 	{
 	}
-	length--;
+	--length;
 	return PeakInfo{ pos, length, thr};
 }
 
