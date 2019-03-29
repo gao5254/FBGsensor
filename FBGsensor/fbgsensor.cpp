@@ -623,7 +623,9 @@ QVector<double> FBGsensor::analyzeData()
 			//calculate center wavelength
 			table[i * 2] = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, ssInfo->at(i).chl);
 			//calculate measurand
-			table[i * 2 + 1] = table[i * 2] * ssInfo->at(i).k + ssInfo->at(i).b;
+			double x = (table[i * 2] - ssInfo->at(i).mu[0]) / ssInfo->at(i).mu[1];
+			table[i * 2 + 1] = ssInfo->at(i).a[0] + ssInfo->at(i).a[1] * x + ssInfo->at(i).a[2] * x * x
+				+ ssInfo->at(i).a[3] * x * x * x;
 		}
 	}
 	return table;
@@ -644,7 +646,9 @@ QVector<double> FBGsensor::detectSensor()
 			{
 				chnl[i] = j;
 				table[i * 2] = wav;
-				table[i * 2 + 1] = wav * ssInfo->at(i).k + ssInfo->at(i).b;
+				double x = (wav - ssInfo->at(i).mu[0]) / ssInfo->at(i).mu[1];
+				table[i * 2 + 1] = ssInfo->at(i).a[0] + ssInfo->at(i).a[1] * x + ssInfo->at(i).a[2] * x * x
+					+ ssInfo->at(i).a[3] * x * x * x;
 				break;
 			}
 		}

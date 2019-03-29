@@ -22,8 +22,12 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 // 			(*ssInfo)[i].chl = settings.value("chl").toInt();
 			(*ssInfo)[i].wavRangeStart = settings.value("wavrangestart").toInt();
 			(*ssInfo)[i].wavRangeEnd = settings.value("wavrangeend").toInt();
-			(*ssInfo)[i].k = settings.value("k").toDouble();
-			(*ssInfo)[i].b = settings.value("b").toDouble();
+			(*ssInfo)[i].mu[0] = settings.value("mu0").toDouble();
+			(*ssInfo)[i].mu[1] = settings.value("mu1").toDouble();
+			(*ssInfo)[i].a[0] = settings.value("a0").toDouble();
+			(*ssInfo)[i].a[1] = settings.value("a1").toDouble();
+			(*ssInfo)[i].a[2] = settings.value("a2").toDouble();
+			(*ssInfo)[i].a[3] = settings.value("a3").toDouble();
 			(*ssInfo)[i].chl = -1;
 			(*ssInfo)[i].isconnected = false;
 		}
@@ -80,6 +84,7 @@ bool sensorInfoWidget::getDetectStatus() const
 	return isdetected;
 }
 
+//set the channel number corresponding to each sensor after detecting sensors
 void sensorInfoWidget::setChannelNum(const QVector<int> &chnl)
 {
 	Q_ASSERT(chnl.size() == ssInfo->size());
@@ -156,10 +161,11 @@ QVariant sensorInfoModel::data(const QModelIndex &index, int role /*= Qt::Displa
 		return QString::number(infoTable.at(index.row()).wavRangeEnd);
 		break;
 	case 3:
-		return QString::number(infoTable.at(index.row()).k, 'f', 3);
+		return QString("%1, %2").arg(infoTable.at(index.row()).mu[0], 0, 'f', 3).arg(infoTable.at(index.row()).mu[1], 0, 'f', 3);
 		break;
 	case 4:
-		return QString::number(infoTable.at(index.row()).b, 'f', 3);
+		return QString("%1, %2,\n %3, %4").arg(infoTable.at(index.row()).a[0], 0, 'f', 3).arg(infoTable.at(index.row()).a[1], 0, 'f', 3)
+			.arg(infoTable.at(index.row()).a[2], 0, 'f', 3).arg(infoTable.at(index.row()).a[3], 0, 'f', 3);
 		break;
 	case 5:
 		if (infoTable.at(index.row()).chl == -1)
@@ -174,11 +180,11 @@ QVariant sensorInfoModel::data(const QModelIndex &index, int role /*= Qt::Displa
 	case 6:
 		if (infoTable.at(index.row()).isconnected)
 		{
-			return "Yes";
+			return QString::fromLocal8Bit("ÊÇ");
 		}
 		else
 		{
-			return "No";
+			return QString::fromLocal8Bit("·ñ");
 		}
 		break;
 	default:

@@ -17,8 +17,8 @@ struct  sensorInfo
 	sensorType type;	//sensor type
 	quint32 wavRangeStart;//rough start range of the wavelength
 	quint32 wavRangeEnd;	//rough end range of the wavelength
-	double k;			//calibration parameter, k
-	double b;			//calibration parameter, b
+	double mu[2];			//centering parameter, mu[0] is mean, mu[1] is std
+	double a[4];			//calibration parameter, a[0-4] is the 0-4 polynomial coefficients
 	int chl;			//channel number
 	bool isconnected;	//connecting status
 };
@@ -46,7 +46,7 @@ public:
 private:
 	QVector<sensorInfo> infoTable;
 	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("类型") << QString::fromLocal8Bit("起始特征波长") << QString::fromLocal8Bit("终止特征波长") 
-		<< QString::fromLocal8Bit("标定参数k") << QString::fromLocal8Bit("标定参数b") 
+		<< QString::fromLocal8Bit("中心化参数组") << QString::fromLocal8Bit("标定参数组") 
 		<< QString::fromLocal8Bit("所在通道") << QString::fromLocal8Bit("是否连接");
 
 };
