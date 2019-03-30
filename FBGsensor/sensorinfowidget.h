@@ -45,8 +45,8 @@ public:
 
 private:
 	QVector<sensorInfo> infoTable;
-	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("类型") << QString::fromLocal8Bit("起始特征波长") << QString::fromLocal8Bit("终止特征波长") 
-		<< QString::fromLocal8Bit("中心化参数组") << QString::fromLocal8Bit("标定参数组") 
+	QStringList Horiheader = QStringList() << QString::fromLocal8Bit("类型") << QString::fromLocal8Bit("特征波段(pm)")  
+		<< QString::fromLocal8Bit("中心化参数(mu0,mu1)") << QString::fromLocal8Bit("标定参数组(a0-a4)") 
 		<< QString::fromLocal8Bit("所在通道") << QString::fromLocal8Bit("是否连接");
 
 };
@@ -75,4 +75,5 @@ private:
 	sensorInfoModel *ssmodel = nullptr;
 
 	bool isdetected = false;
+	QHeaderView *headerView = nullptr;
 };

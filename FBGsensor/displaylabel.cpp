@@ -257,7 +257,7 @@ void displayLabel::paintEvent(QPaintEvent *event)
 	}
 	
 	//draw the cursor 
-	if (cursorPos > xBegin && cursorPos < xEnd)
+	if (cursorPos > xBegin && cursorPos < xEnd && ((cursorPos - wStart) / wStep) < pData[0].size())
 	{
 		QPen cursorPen;
 		cursorPen.setWidth(1);
@@ -400,10 +400,10 @@ void displayLabel::drawDataLines(QPainter *p)
 		for (int offsetx = index * wStep + wStart - xBegin; offsetx <= (int)(xEnd - xBegin); offsetx += wStep)
 		{
 			polygon << QPointF(offsetx * xFactor, ((qint32)pData[i].at(index) - (qint32)yBegin) * yFactor);
-			if (xEnd - xBegin < 1000)
-			{
-				qDebug() << offsetx;
-			}
+// 			if (xEnd - xBegin < 1000)
+// 			{
+// 				qDebug() << offsetx;
+// 			}
 			index++;
 		}
 		if (isAttaching)

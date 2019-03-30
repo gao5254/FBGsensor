@@ -64,25 +64,25 @@ FBGsensor::FBGsensor(QWidget *parent)
 
 
 	//show test data
-	spectrumData[0].fill(2048);
-	spectrumData[1].fill(3052);
+// 	spectrumData[0].fill(2048);
+// 	spectrumData[1].fill(3052);
 	ui.showLabel->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
-// 	qDebug() << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-	QVector<quint16> temparr(2051);
-	QFile file("E:\\Users\\workG\\Desktop\\20190326-2136.csv");
-	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, &temparr);
-	QTextStream data(&file);
-	if (file.open(QFile::ReadOnly | QFile::Text))
-	{
-		data.readLine();
-		QString line = data.readLine();
-		QStringList numlist = line.split(',');
-		for (int i = 2; i < (numlist.size() - 1); ++i)
-		{
-			temparr[i-2] = numlist.at(i).toUInt();
-		}
-	}
-	double center = dtProcesser->getPeakWav(1545000, 1555000, 0);
+//  qDebug() << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+// 	QVector<quint16> temparr(2051);
+// 	QFile file("E:\\Users\\workG\\Desktop\\20190326-2136.csv");
+// 	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, &temparr);
+// 	QTextStream data(&file);
+// 	if (file.open(QFile::ReadOnly | QFile::Text))
+// 	{
+// 		data.readLine();
+// 		QString line = data.readLine();
+// 		QStringList numlist = line.split(',');
+// 		for (int i = 2; i < (numlist.size() - 1); ++i)
+// 		{
+// 			temparr[i-2] = numlist.at(i).toUInt();
+// 		}
+// 	}
+// 	double center = dtProcesser->getPeakWav(1545000, 1555000, 0);
 	//delete later
 
 
@@ -484,9 +484,19 @@ void FBGsensor::spectrumSample()
 		{
 			if (ssInfo->at(i).isconnected)
 			{
-				pkTable[chnl[ssInfo->at(i).chl]] = dataTable.at(i * 2);
-				pkTable[chnl[ssInfo->at(i).chl] + 1] = dataTable.at(i * 2 + 1);
-				chnl[ssInfo->at(i).chl] += 2;
+				if (dataTable.at(i * 2) > 0)
+				{
+					pkTable[chnl[ssInfo->at(i).chl]] = dataTable.at(i * 2);
+					pkTable[chnl[ssInfo->at(i).chl] + 1] = dataTable.at(i * 2 + 1);
+					chnl[ssInfo->at(i).chl] += 2;
+				} 
+				else
+				{
+					pkTable[chnl[ssInfo->at(i).chl]] = -1;
+					pkTable[chnl[ssInfo->at(i).chl] + 1] = -1;
+					chnl[ssInfo->at(i).chl] += 2;
+
+				}
 			}
 		}
 		peakInfoModel->setnum(pkTable);
@@ -496,7 +506,14 @@ void FBGsensor::spectrumSample()
 		{
 			if (ssInfo->at(i).isconnected)
 			{
-				lcdDisplay[(int)(ssInfo->at(i).type)]->display(dataTable.at(i * 2 + 1));
+				if (dataTable.at(i * 2) > 0)
+				{
+					lcdDisplay[(int)(ssInfo->at(i).type)]->display(dataTable.at(i * 2 + 1));
+				} 
+				else
+				{
+					lcdDisplay[(int)(ssInfo->at(i).type)]->display("-----");
+				}
 			}
 		}
 
@@ -512,7 +529,7 @@ void FBGsensor::spectrumSample()
 				{
 					data << ',' << ad;
 				}
-				data << ','<< qSetRealNumberPrecision(10) << dataTable[i];
+// 				data << ','<< qSetRealNumberPrecision(10) << dataTable[i];
 				data << endl;
 			}
 		}
@@ -621,11 +638,19 @@ QVector<double> FBGsensor::analyzeData()
 		if (ssInfo->at(i).isconnected)
 		{
 			//calculate center wavelength
-			table[i * 2] = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, ssInfo->at(i).chl);
+			double wav = dtProcesser->getPeakWav(ssInfo->at(i).wavRangeStart, ssInfo->at(i).wavRangeEnd, ssInfo->at(i).chl);
 			//calculate measurand
-			double x = (table[i * 2] - ssInfo->at(i).mu[0]) / ssInfo->at(i).mu[1];
-			table[i * 2 + 1] = ssInfo->at(i).a[0] + ssInfo->at(i).a[1] * x + ssInfo->at(i).a[2] * x * x
-				+ ssInfo->at(i).a[3] * x * x * x;
+			table[i * 2] = wav;
+			if (wav > 0)
+			{
+				double x = (table[i * 2] - ssInfo->at(i).mu[0]) / ssInfo->at(i).mu[1];
+				table[i * 2 + 1] = ssInfo->at(i).a[0] + ssInfo->at(i).a[1] * x + ssInfo->at(i).a[2] * x * x
+					+ ssInfo->at(i).a[3] * x * x * x;
+			}
+			else
+			{
+				table[i * 2 + 1] = -1;
+			}
 		}
 	}
 	return table;

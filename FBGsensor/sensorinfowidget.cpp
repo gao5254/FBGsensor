@@ -47,9 +47,18 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 // 	(*ssInfo)[0].k = 0.0680;
 // 	(*ssInfo)[0].b = -105437.635;
 
+
 	//init model
 	ssmodel = new sensorInfoModel((*ssInfo), this); 
 	ui.sensorInfoView->setModel(ssmodel);
+
+	//init headerview
+	headerView = ui.sensorInfoView->horizontalHeader();
+	headerView->setSectionResizeMode(QHeaderView::Interactive);
+// 	qDebug() << headerView->count();
+	headerView->resizeSection(1, 120);
+	headerView->resizeSection(2, 150);
+	headerView->resizeSection(3, 180);
 
 	connect(this, &sensorInfoWidget::sensorInfoChanged, ssmodel, &sensorInfoModel::setInfo);
 }
@@ -155,19 +164,19 @@ QVariant sensorInfoModel::data(const QModelIndex &index, int role /*= Qt::Displa
 		return typeList.at(index.row());
 		break;
 	case 1:
-		return QString::number(infoTable.at(index.row()).wavRangeStart);
+		return QString("%1-%2").arg(infoTable.at(index.row()).wavRangeStart).arg(infoTable.at(index.row()).wavRangeEnd);
 		break;
+// 	case 2:
+// 		return QString::number(infoTable.at(index.row()).wavRangeEnd);
+// 		break;
 	case 2:
-		return QString::number(infoTable.at(index.row()).wavRangeEnd);
-		break;
-	case 3:
 		return QString("%1, %2").arg(infoTable.at(index.row()).mu[0], 0, 'f', 3).arg(infoTable.at(index.row()).mu[1], 0, 'f', 3);
 		break;
-	case 4:
-		return QString("%1, %2,\n %3, %4").arg(infoTable.at(index.row()).a[0], 0, 'f', 3).arg(infoTable.at(index.row()).a[1], 0, 'f', 3)
+	case 3:
+		return QString("%1, %2, %3, %4").arg(infoTable.at(index.row()).a[0], 0, 'f', 3).arg(infoTable.at(index.row()).a[1], 0, 'f', 3)
 			.arg(infoTable.at(index.row()).a[2], 0, 'f', 3).arg(infoTable.at(index.row()).a[3], 0, 'f', 3);
 		break;
-	case 5:
+	case 4:
 		if (infoTable.at(index.row()).chl == -1)
 		{
 			return QString::fromLocal8Bit("未连接");
@@ -177,7 +186,7 @@ QVariant sensorInfoModel::data(const QModelIndex &index, int role /*= Qt::Displa
 			return QString::fromLocal8Bit("通道") + QString::number(infoTable.at(index.row()).chl + 1);
 		}
 		break;
-	case 6:
+	case 5:
 		if (infoTable.at(index.row()).isconnected)
 		{
 			return QString::fromLocal8Bit("是");

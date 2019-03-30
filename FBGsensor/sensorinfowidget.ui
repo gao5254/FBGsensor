@@ -70,7 +70,7 @@
       </size>
      </property>
      <attribute name="horizontalHeaderDefaultSectionSize">
-      <number>80</number>
+      <number>60</number>
      </attribute>
     </widget>
    </item>
