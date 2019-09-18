@@ -37,7 +37,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 	lcdDisplay << ui.lcdNumber << ui.lcdNumber_2 << ui.lcdNumber_3;
 	for (int i = 0; i < lcdDisplay.size(); ++i)
 	{
-		lcdDisplay.at(i)->display("-----");
+		lcdDisplay.at(i)->display("------");
 	}
 
 // 	peakInfoModel = new PeakInfoModel(2, 2, this);
@@ -508,11 +508,11 @@ void FBGsensor::spectrumSample()
 			{
 				if (dataTable.at(i * 2) > 0)
 				{
-					lcdDisplay[(int)(ssInfo->at(i).type)]->display(dataTable.at(i * 2 + 1));
+					lcdDisplay[(int)(ssInfo->at(i).type)]->display(QString::number(dataTable.at(i * 2 + 1), 'f', 2));
 				} 
 				else
 				{
-					lcdDisplay[(int)(ssInfo->at(i).type)]->display("-----");
+					lcdDisplay[(int)(ssInfo->at(i).type)]->display("------");
 				}
 			}
 		}
@@ -591,7 +591,7 @@ void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 		strList << "" << "" << "" << "";
 	}
 
-	lcdStr << "-----" << "-----" << "-----";
+	lcdStr << "------" << "------" << "------";
 	int chnl[2] = { 0, info->size() * 2 };
 
 	for (int i = 0; i < info->size(); ++i)

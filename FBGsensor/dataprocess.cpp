@@ -60,6 +60,12 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 			maxpos = i;
 		}
 	}
+	//if peak is too low, then there is no peak
+	if (peak < 2000)
+	{
+		return PeakInfo{ 0, 0, 0 };
+	}
+
 	quint32 num = endPos - beginPos + 1;
 	//subtract some large points from the total sum
 	for (int i = qMax(maxpos - 10, beginPos); i <= qMin(maxpos + 30, endPos); ++i)

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>869</width>
-    <height>706</height>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="measureTab">
        <attribute name="title">
@@ -71,6 +71,9 @@
                 <height>60</height>
                </size>
               </property>
+              <property name="digitCount">
+               <number>6</number>
+              </property>
               <property name="segmentStyle">
                <enum>QLCDNumber::Flat</enum>
               </property>
@@ -98,6 +101,9 @@
                 <width>0</width>
                 <height>60</height>
                </size>
+              </property>
+              <property name="digitCount">
+               <number>6</number>
               </property>
               <property name="segmentStyle">
                <enum>QLCDNumber::Flat</enum>
@@ -128,7 +134,7 @@
                </size>
               </property>
               <property name="digitCount">
-               <number>5</number>
+               <number>6</number>
               </property>
               <property name="segmentStyle">
                <enum>QLCDNumber::Flat</enum>
