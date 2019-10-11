@@ -8,7 +8,7 @@
 // the type of the sensor
 enum sensorType
 {
-	Temperature, Pressure, Humidity
+	Temperature, Pressure, Humidity, Hydrogen
 };
 
 // to save the information of sensors
@@ -37,7 +37,7 @@ public:
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
-	const QStringList typeList = QStringList() << QString::fromLocal8Bit("温度") << QString::fromLocal8Bit("压力") << QString::fromLocal8Bit("湿度");
+	const QStringList typeList = QStringList() << QString::fromLocal8Bit("温度") << QString::fromLocal8Bit("压力") << QString::fromLocal8Bit("湿度") << QString::fromLocal8Bit("氢气");
 
 	public slots:
 	void setInfo(const QVector<sensorInfo> *ssInfo);
@@ -62,7 +62,8 @@ public:
 	void setChannelNum(const QVector<int> &chnl);
 
 	QVector<sensorInfo> *ssInfo = nullptr;
-	const QStringList unitList = QStringList() << QString::fromLocal8Bit("℃") << "kPa" << "%RH";
+	double htCor = 0;
+	const QStringList unitList = QStringList() << QString::fromLocal8Bit("℃") << "kPa" << "%RH" << "%VOL";
 
 
 public slots:

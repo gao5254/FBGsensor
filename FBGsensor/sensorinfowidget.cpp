@@ -38,6 +38,7 @@ sensorInfoWidget::sensorInfoWidget(QWidget *parent)
 		// a null vector
 		ssInfo = new QVector<sensorInfo>();
 	}
+	htCor = settings.value("htcor", 0).toDouble();
 	//delete later
 // 	ssInfo->resize(1);
 // 	(*ssInfo)[0].type = sensorType::Temperature;

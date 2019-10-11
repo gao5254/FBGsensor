@@ -45,6 +45,7 @@ private:
 	QTime *curTime;
 	PeakInfoModel  *peakInfoModel = nullptr;
 	QVector<sensorInfo> *ssInfo = nullptr;
+	double htCor = 0;
 	QList<QLCDNumber*> lcdDisplay;
 
 	bool firstSetInfo=true;			//if first set info, change the status of edit and btn

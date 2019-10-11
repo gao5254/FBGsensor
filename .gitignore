@@ -17,9 +17,11 @@ bld/
 [Oo]bj/
 
 # edited by gaoxu
+Abackup/
 GeneratedFiles/
 testData.csv
 FBGconfig.ini
+FBGsensor.VC.db
 
 
 # Roslyn cache directories

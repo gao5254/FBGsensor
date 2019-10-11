@@ -61,7 +61,7 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 		}
 	}
 	//if peak is too low, then there is no peak
-	if (peak < 2000)
+	if (peak < 2200)
 	{
 		return PeakInfo{ 0, 0, 0 };
 	}
@@ -76,18 +76,18 @@ DataProcess::PeakInfo DataProcess::getMainPart(quint32 beginPos, quint32 endPos,
 	double ratio = 0.4;
 	quint16 base = total / num, thr = (quint16)((peak - base) * ratio) + base;
 	//if peak is too close to the base, then there is no peak
-	if ((peak - base) < 400)
+	if ((peak - base) < 500)
 	{
 		return PeakInfo{ 0, 0, thr };
 	}
 
 	quint32 pos = maxpos;
-	for (pos = maxpos; pData[chl].at(pos) >= thr; pos--)
+	for (pos = maxpos; pos >= beginPos && pData[chl].at(pos) >= thr; pos--)
 	{
 	}
 	++pos;
 	quint32 length = maxpos - pos + 1;
-	for (length; pData[chl].at(pos + length - 1) >= thr; length ++)
+	for (length; pos <= endPos && pData[chl].at(pos + length - 1) >= thr; length ++)
 	{
 	}
 	--length;

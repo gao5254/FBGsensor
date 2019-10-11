@@ -20,8 +20,9 @@ FBGsensor::FBGsensor(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	//init sensor info
+	//init sensor info and htCor from sensorinfowidget
 	ssInfo = ui.ssInfoWidget->ssInfo;
+	htCor = ui.ssInfoWidget->htCor;
 
 	//initialize member
 	curTime = new QTime();
@@ -34,7 +35,7 @@ FBGsensor::FBGsensor(QWidget *parent)
 	dtProcesser = new DataProcess((QObject*)this);
 	dtProcesser->setPara(waveStart, waveEnd, waveStep, channelNum, spectrumData);
 	
-	lcdDisplay << ui.lcdNumber << ui.lcdNumber_2 << ui.lcdNumber_3;
+	lcdDisplay << ui.lcdNumber << ui.lcdNumber_2 << ui.lcdNumber_3 << ui.lcdNumber_4;
 	for (int i = 0; i < lcdDisplay.size(); ++i)
 	{
 		lcdDisplay.at(i)->display("------");
@@ -591,7 +592,7 @@ void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 		strList << "" << "" << "" << "";
 	}
 
-	lcdStr << "------" << "------" << "------";
+	lcdStr << "------" << "------" << "------" << "------";
 	int chnl[2] = { 0, info->size() * 2 };
 
 	for (int i = 0; i < info->size(); ++i)
@@ -605,7 +606,7 @@ void FBGsensor::onSensorInfoChanged(QVector<sensorInfo> *info)
 		}
 	}
 	peakInfoModel->setUnitList(strList);
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < lcdStr.size(); ++i)
 	{
 		lcdDisplay.at(i)->display(lcdStr.at(i));
 	}
@@ -633,6 +634,8 @@ void FBGsensor::showOvertimeMsg()
 QVector<double> FBGsensor::analyzeData()
 {
 	QVector<double> table(ssInfo->size() * 2);
+	double tem = -1;
+	int humind = -1;
 	for (int i = 0; i < ssInfo->size(); ++i)
 	{
 		if (ssInfo->at(i).isconnected)
@@ -646,11 +649,32 @@ QVector<double> FBGsensor::analyzeData()
 				double x = (table[i * 2] - ssInfo->at(i).mu[0]) / ssInfo->at(i).mu[1];
 				table[i * 2 + 1] = ssInfo->at(i).a[0] + ssInfo->at(i).a[1] * x + ssInfo->at(i).a[2] * x * x
 					+ ssInfo->at(i).a[3] * x * x * x;
+				//check if contains tem sensor or hum sensor
+				if (ssInfo->at(i).type == Temperature)
+				{
+					tem = table[i * 2 + 1];
+				}
+				else if (ssInfo->at(i).type == Humidity)
+				{
+					humind = i;
+				}
 			}
 			else
 			{
 				table[i * 2 + 1] = -1;
 			}
+		}
+	}
+	//re-calculate the hum measurand
+	if (humind > 0)
+	{
+		if (tem > 0)
+		{
+			table[humind * 2 + 1] = htCor * tem + table[humind * 2 + 1];
+		}
+		else
+		{
+			table[humind * 2 + 1] = htCor * 20 + table[humind * 2 + 1];
 		}
 	}
 	return table;
@@ -660,6 +684,8 @@ QVector<double> FBGsensor::detectSensor()
 {
 	QVector<double> table(ssInfo->size() * 2);
 	QVector<int> chnl(ssInfo->size());
+	double tem = -1;
+	int humind = -1;
 	chnl.fill(-1);
 	//detect the sensor, set their channel number
 	for (int i = 0; i < ssInfo->size(); ++i)
@@ -674,8 +700,29 @@ QVector<double> FBGsensor::detectSensor()
 				double x = (wav - ssInfo->at(i).mu[0]) / ssInfo->at(i).mu[1];
 				table[i * 2 + 1] = ssInfo->at(i).a[0] + ssInfo->at(i).a[1] * x + ssInfo->at(i).a[2] * x * x
 					+ ssInfo->at(i).a[3] * x * x * x;
+				//check if contains tem sensor or hum sensor
+				if (ssInfo->at(i).type == Temperature)
+				{
+					tem = table[i * 2 + 1];
+				}
+				else if (ssInfo->at(i).type == Humidity)
+				{
+					humind = i;
+				}
 				break;
 			}
+		}
+	}
+	//re-calculate the hum measurand
+	if (humind > 0)
+	{
+		if (tem > 0)
+		{
+			table[humind * 2 + 1] = htCor * tem + table[humind * 2 + 1];
+		} 
+		else
+		{
+			table[humind * 2 + 1] = htCor * 20 + table[humind * 2 + 1];
 		}
 	}
 	ui.ssInfoWidget->setChannelNum(chnl);

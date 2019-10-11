@@ -21,7 +21,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="measureTab">
        <attribute name="title">
@@ -32,7 +32,7 @@
          <widget class="sensorInfoWidget" name="ssInfoWidget" native="true"/>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,2,1">
+         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="3,4,3">
           <item>
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
@@ -87,7 +87,7 @@
                </font>
               </property>
               <property name="text">
-               <string>压力/kPa</string>
+               <string>相对压力/kPa</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -127,6 +127,37 @@
             </item>
             <item>
              <widget class="QLCDNumber" name="lcdNumber_3">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="digitCount">
+               <number>6</number>
+              </property>
+              <property name="segmentStyle">
+               <enum>QLCDNumber::Flat</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_9">
+              <property name="font">
+               <font>
+                <pointsize>20</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>氢气浓度/%VOL</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLCDNumber" name="lcdNumber_4">
               <property name="minimumSize">
                <size>
                 <width>0</width>
